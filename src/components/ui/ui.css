@@ -1,0 +1,914 @@
+/* Primitivas de UI. Nenhuma cor literal — tudo sai de tokens.css. */
+
+/* ─── Card ─── */
+.ui-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  color: var(--text);
+}
+
+.ui-card--flush { padding: 0; }
+.ui-card--tight { padding: var(--sp-4); }
+.ui-card--raised { box-shadow: var(--shadow-md); }
+
+.ui-card--interactive {
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.ui-card--interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+
+.ui-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.ui-card__title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  margin: 0;
+}
+
+.ui-card__subtitle {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin: var(--sp-1) 0 0;
+}
+
+/* ─── Button ─── */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: 0.5rem var(--sp-4);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.ui-btn:disabled,
+.ui-btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ui-btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ui-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #fff;
+}
+
+.ui-btn--secondary {
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.ui-btn--secondary:hover:not(:disabled) {
+  background: var(--border-strong);
+  color: var(--text);
+}
+
+.ui-btn--ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.ui-btn--ghost:hover:not(:disabled) {
+  background: var(--accent-softer);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ui-btn--danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.ui-btn--sm { padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); }
+.ui-btn--lg { padding: var(--sp-3) var(--sp-5); font-size: var(--fs-base); }
+.ui-btn--block { width: 100%; }
+
+/* ─── StatTile ─── */
+.ui-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.ui-stat__label {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+.ui-stat__value {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.ui-stat__value--positive { color: var(--success); }
+.ui-stat__value--negative { color: var(--danger); }
+
+.ui-stat__hint {
+  font-size: var(--fs-2xs);
+  color: var(--text-subtle);
+}
+
+.ui-stat__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  padding: 0.1rem var(--sp-2);
+  border-radius: var(--r-xs);
+  width: fit-content;
+}
+
+.ui-stat__delta--up { background: var(--success-soft); color: var(--success); }
+.ui-stat__delta--down { background: var(--danger-soft); color: var(--danger); }
+.ui-stat__delta--flat { background: var(--surface-3); color: var(--text-muted); }
+
+/* ─── Field ─── */
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.ui-field__label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+
+.ui-field__hint {
+  font-size: var(--fs-2xs);
+  color: var(--text-subtle);
+}
+
+.ui-field__error {
+  font-size: var(--fs-2xs);
+  color: var(--danger);
+}
+
+.ui-field__control {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  width: 100%;
+}
+
+.ui-field__control::placeholder { color: var(--text-subtle); }
+
+.ui-field__control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.ui-field--invalid .ui-field__control { border-color: var(--danger); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Primitivas de layout e de leitura de números.
+   Tudo o que está abaixo existe para as páginas deixarem de ter
+   style={{ fontSize: '0.78rem', color: '#8b5cf6' }} espalhado por 336 sítios.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Estrutura de página ─── */
+.ui-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.ui-page__body {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--gutter) var(--sp-8);
+}
+
+@media (max-width: 640px) {
+  .ui-page__body { padding: var(--sp-4) var(--sp-4) var(--sp-7); }
+}
+
+.ui-page__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-6);
+}
+
+.ui-page__title {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--leading-tight);
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* Rótulo pequeno acima de um título ou de um valor. */
+.ui-eyebrow {
+  display: block;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+  margin: 0 0 var(--sp-2);
+}
+
+/* ─── Secção ─── */
+.ui-section { margin-top: var(--sp-6); }
+
+.ui-section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+.ui-section__title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  margin: 0;
+}
+
+.ui-section__link {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  white-space: nowrap;
+}
+
+.ui-section__link:hover { color: var(--accent); }
+
+/* ─── Número herói ───
+   Um ecrã tem um destes. É a resposta à pergunta com que o utilizador abriu
+   a página; tudo o resto é contexto para ele. */
+.ui-hero__value {
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin: 0;
+}
+
+.ui-hero__value--positive { color: var(--success); }
+.ui-hero__value--negative { color: var(--danger); }
+
+.ui-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .ui-hero__value { font-size: var(--fs-2xl); }
+}
+
+/* ─── Barra de progresso ─── */
+.ui-progress {
+  height: 8px;
+  background: var(--surface-3);
+  border-radius: var(--r-full);
+  overflow: hidden;
+  /* Marca a fronteira do orçamento. Sem isto, 100% e 140% desenham-se
+     exatamente da mesma maneira: a barra cheia. */
+  position: relative;
+}
+
+.ui-progress__fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  transition: width var(--dur-slow) var(--ease);
+}
+
+/* Acima do orçamento: o excesso fica listado sobre a parte a cheio, para se
+   ver que passou a linha e não apenas que chegou ao fim. */
+.ui-progress--over .ui-progress__limit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--bg);
+}
+
+.ui-progress__over {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--danger) 0 4px,
+    color-mix(in srgb, var(--danger) 55%, transparent) 4px 8px
+  );
+}
+
+.ui-progress__fill--over { background: var(--danger); }
+.ui-progress__fill--near { background: var(--warning); }
+.ui-progress__fill--good { background: var(--success); }
+
+/* ─── Linha de métricas secundárias ───
+   Separadas por filetes em vez de cada uma no seu cartão: são contexto
+   para o número herói, não quatro factos independentes. */
+.ui-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-4);
+}
+
+.ui-metrics > * + * {
+  border-left: 1px solid var(--border);
+  padding-left: var(--sp-4);
+}
+
+.ui-metric__label {
+  display: block;
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+}
+
+.ui-metric__value {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  line-height: var(--leading-tight);
+}
+
+.ui-metric__hint {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-subtle);
+  margin-top: var(--sp-1);
+}
+
+@media (max-width: 640px) {
+  .ui-metrics { grid-template-columns: 1fr 1fr; gap: var(--sp-4) 0; }
+  .ui-metrics > *:nth-child(odd) { border-left: 0; padding-left: 0; }
+}
+
+/* ─── Delta (+/−) ───
+   O ícone e o sinal carregam o significado; a cor só reforça. */
+.ui-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-delta--up { color: var(--danger); }     /* gastar mais é mau */
+.ui-delta--down { color: var(--success); }
+.ui-delta--flat { color: var(--text-muted); }
+
+/* Nos investimentos a polaridade inverte-se: subir é bom. */
+.ui-delta--gain { color: var(--success); }
+.ui-delta--loss { color: var(--danger); }
+
+/* ─── Chip de categoria ─── */
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.ui-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  flex-shrink: 0;
+  background: var(--cat-1);
+}
+
+/* ─── Tabela ─── */
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+
+.ui-table th {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+  text-align: left;
+  padding: 0 var(--sp-3) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.ui-table td {
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.ui-table tbody tr:last-child td { border-bottom: 0; }
+.ui-table tbody tr:hover { background: var(--surface-2); }
+
+.ui-table th:first-child,
+.ui-table td:first-child { padding-left: 0; }
+.ui-table th:last-child,
+.ui-table td:last-child { padding-right: 0; }
+
+.ui-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-table .muted { color: var(--text-muted); }
+
+/* ─── Estado vazio ─── */
+.ui-empty {
+  text-align: center;
+  padding: var(--sp-7) var(--sp-4);
+  color: var(--text-muted);
+}
+
+.ui-empty__title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  margin: var(--sp-3) 0 var(--sp-1);
+}
+
+.ui-empty__text {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin: 0 auto var(--sp-4);
+  max-width: 36ch;
+}
+
+/* ─── Aviso ─── */
+.ui-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+.ui-alert__icon { flex-shrink: 0; margin-top: 1px; }
+.ui-alert--warning { border-color: var(--warning); background: var(--warning-soft); }
+.ui-alert--warning .ui-alert__icon { color: var(--warning); }
+.ui-alert--danger { border-color: var(--danger); background: var(--danger-soft); }
+.ui-alert--danger .ui-alert__icon { color: var(--danger); }
+
+/* ─── Grelha ─── */
+/* align-items: start impede um cartão curto de ser esticado à altura do
+   vizinho, o que enchia metade do cartão de vazio. */
+.ui-grid { display: grid; gap: var(--sp-4); align-items: start; }
+.ui-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ui-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ui-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ui-grid--sidebar { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+
+@media (max-width: 900px) {
+  .ui-grid--3,
+  .ui-grid--4,
+  .ui-grid--sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .ui-grid--2,
+  .ui-grid--3,
+  .ui-grid--4,
+  .ui-grid--sidebar { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ─── Tooltip de gráfico ─── */
+.ui-tooltip {
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: var(--sp-2) var(--sp-3);
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-sm);
+}
+
+.ui-tooltip__label {
+  display: block;
+  font-size: var(--fs-2xs);
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+}
+
+.ui-tooltip__value {
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Barra de aplicação ─── */
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.appbar__inner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+.appbar__brand {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+
+.appbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.appbar__nav::-webkit-scrollbar { display: none; }
+
+.appbar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.appbar__link:hover { background: var(--surface-2); color: var(--text); }
+
+.appbar__link--active { background: var(--surface-3); color: var(--text); }
+
+.appbar__logout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.appbar__logout:hover { background: var(--danger-soft); color: var(--danger); }
+
+@media (max-width: 720px) {
+  .appbar__inner { gap: var(--sp-3); padding: 0 var(--sp-4); }
+  /* Em ecrãs estreitos o texto do link desaparece e fica o ícone: seis
+     etiquetas quebravam a barra para três linhas. */
+  .appbar__link span { display: none; }
+  .appbar__link { padding: var(--sp-2); }
+  .appbar__logout-text { display: none; }
+}
+
+
+/* ─── Slider ───
+   O .form-range do Bootstrap traz a pista e o polegar do tema claro. */
+input[type='range'].form-range,
+.ui-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range'].form-range::-webkit-slider-runnable-track,
+.ui-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+}
+
+input[type='range'].form-range::-moz-range-track,
+.ui-range::-moz-range-track {
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+}
+
+input[type='range'].form-range::-webkit-slider-thumb,
+.ui-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+input[type='range'].form-range::-moz-range-thumb,
+.ui-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  border: 2px solid var(--surface);
+}
+
+/* ─── Cabeçalho ordenável ─── */
+.ui-table__sort {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ui-table__sort:hover { color: var(--text); }
+
+/* ─── Ações de linha ───
+   Escondidas até o rato entrar na linha; sempre visíveis para quem navega por
+   teclado (:focus-within) e em ecrãs táteis, onde não há hover. */
+.ui-rowactions {
+  display: inline-flex;
+  gap: var(--sp-1);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+tr:hover .ui-rowactions,
+tr:focus-within .ui-rowactions { opacity: 1; }
+
+@media (hover: none) {
+  .ui-rowactions { opacity: 1; }
+}
+
+.ui-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.ui-iconbtn:hover { background: var(--surface-3); color: var(--text); }
+.ui-iconbtn--danger:hover { background: var(--danger-soft); color: var(--danger); }
+
+/* ─── Barra de alocação ─── */
+.alloc-bar {
+  display: flex;
+  /* O intervalo entre segmentos é o que os separa quando duas cores vizinhas
+     são difíceis de distinguir. */
+  gap: 2px;
+  height: 10px;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.alloc-bar__seg { height: 100%; }
+.alloc-bar__seg:first-child { border-radius: var(--r-full) 0 0 var(--r-full); }
+.alloc-bar__seg:last-child { border-radius: 0 var(--r-full) var(--r-full) 0; }
+.alloc-bar__seg:only-child { border-radius: var(--r-full); }
+
+.alloc-legend {
+  list-style: none;
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.alloc-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+
+.alloc-legend__name { color: var(--text); }
+
+.alloc-legend__value {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Sugestões (pesquisa de ticker) ─── */
+.ui-suggest {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: var(--sp-1);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.ui-suggest__msg {
+  margin: 0;
+  padding: var(--sp-4);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.ui-suggest__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.ui-suggest__item:last-child { border-bottom: 0; }
+.ui-suggest__item:hover { background: var(--surface-3); }
+
+/* ─── Barra de filtros ─── */
+.filterbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+}
+
+.filterbar .ui-field__label {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+}
+
+.filterbar .ui-field__control { padding: var(--sp-2) var(--sp-3); }
+
+/* ─── Paginação ─── */
+.ui-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+.ui-pager__status {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Navegação entre meses ─── */
+.monthnav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-1);
+  margin-left: calc(var(--sp-2) * -1);
+}
+
+.monthnav .ui-iconbtn { width: 24px; height: 24px; }
+.monthnav .ui-iconbtn:disabled { opacity: 0.3; cursor: default; }
+.monthnav .ui-iconbtn:disabled:hover { background: transparent; color: var(--text-muted); }
+
+.monthnav__today {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  padding: 0 var(--sp-2);
+}
+
+/* ─── Barra de proporção nos relatórios ─── */
+.report-bar-col { width: 28%; }
+
+.report-bar {
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.report-bar__fill {
+  height: 100%;
+  background: var(--cat-1);
+  border-radius: var(--r-full);
+}

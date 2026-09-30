@@ -1,0 +1,5 @@
+{
+  "watch": ["server.js", "app.js", "routes", "lib", "middleware", "schemas", "prisma/schema.prisma"],
+  "ext": "js,json,prisma",
+  "exec": "npx prisma generate && node server.js"
+}

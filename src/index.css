@@ -1,0 +1,91 @@
+@import './styles/tokens.css';
+@import './styles/bootstrap-dark.css';
+@import './components/ui/ui.css';
+
+/* ─── Base ─── */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg);
+  color: var(--text);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+h1, h2, h3, h4, h5, h6 { color: var(--text); }
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-hover); }
+
+hr { border-color: var(--border); opacity: 1; }
+
+/* Valores monetários alinham sempre pela coluna. */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ─── Acessibilidade ─── */
+
+/* O contorno de foco existia a zero. Sem isto, navegar por teclado é às cegas. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* O Bootstrap põe o seu próprio anel; deixamos o nosso mandar. */
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Alvos de toque com tamanho mínimo utilizável em telemóvel. */
+button,
+[role='button'] { min-height: 32px; }
+
+/* Só para leitores de ecrã. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* A app tem 5 animações de entrada e um ticker em loop permanente.
+   Quem pediu menos movimento ao sistema operativo deixa de as apanhar. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Barras de deslocamento ─── */
+* {
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--r-full);
+  border: 2px solid var(--bg);
+}

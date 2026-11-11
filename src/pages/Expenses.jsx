@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FiPlus } from 'react-icons/fi';
+import { useSearchParams } from 'react-router-dom';
+import {
+  FiCalendar, FiCreditCard, FiPlus, FiTrendingDown,
+} from 'react-icons/fi';
 
-import DashboardNavbar from '../components/DashboardNavbar';
+import AppShell from '../components/AppShell';
 import ExpenseForm from '../components/ExpenseForm';
+import StatementImport from '../components/StatementImport';
 import ExpenseList from '../components/ExpenseList';
 import FilterBar from '../components/FilterBar';
+import MetricCard from '../components/MetricCard';
 import SkeletonCard from '../components/SkeletonCard';
 import { Button, Modal } from '../components/ui';
 
@@ -32,6 +37,32 @@ export default function Expenses() {
   const [sortField, setSortField] = useState('date');
   const [sortDirection, setSortDirection] = useState('desc');
   const [page, setPage] = useState(1);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  /*
+   * A barra superior da moldura navega para /app/expenses?q=… e o botão
+   * "Nova transação" para ?new=1. Estes dois efeitos transformam esses
+   * parâmetros no estado local da página e limpam o URL a seguir, para que um
+   * refresh não reabra o modal.
+   */
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q === null) return;
+    setSearch(q);
+    const next = new URLSearchParams(searchParams);
+    next.delete('q');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (searchParams.get('new') !== '1') return;
+    setEditing(null);
+    setShowModal(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('new');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -153,23 +184,48 @@ export default function Expenses() {
   };
 
   return (
-    <div className="ui-page">
-      <DashboardNavbar />
-
-      <main className="ui-page__body">
-        <header className="ui-page__head">
-          <div>
-            <span className="ui-eyebrow">Despesas</span>
-            <h1 className="ui-page__title">{formatMoney(total, symbol)}</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', margin: 'var(--sp-1) 0 0' }}>
-              {visible.length} {visible.length === 1 ? 'registo' : 'registos'} no período selecionado
-            </p>
-          </div>
+    <AppShell>
+      <header className="page-head">
+        <div>
+          <span className="ui-eyebrow">Transações</span>
+          <h1 className="page-title">Despesas</h1>
+          <p className="page-subtitle">
+            {visible.length} {visible.length === 1 ? 'registo' : 'registos'} · {formatMoney(total, symbol)} no período
+          </p>
+        </div>
+        <div className="page-head__actions">
+          <StatementImport symbol={symbol} onImported={fetchData} />
           <Button variant="primary" onClick={() => { setEditing(null); setShowModal(true); }} icon={<FiPlus size={15} />}>
             Nova despesa
           </Button>
-        </header>
+        </div>
+      </header>
 
+      <div className="stat-grid">
+        <MetricCard
+          label="Total gasto"
+          value={formatMoney(total, symbol)}
+          icon={<FiCreditCard size={16} />}
+          accent="orange"
+          hint="no período selecionado"
+        />
+        <MetricCard
+          label="Média por dia ativo"
+          value={formatMoney(activeDays ? total / activeDays : 0, symbol)}
+          icon={<FiCalendar size={16} />}
+          accent="blue"
+          hint={`${activeDays} ${activeDays === 1 ? 'dia' : 'dias'} com despesas`}
+        />
+        <MetricCard
+          label="Maior despesa"
+          value={biggest ? formatMoney(biggest.amount, symbol) : '—'}
+          icon={<FiTrendingDown size={16} />}
+          accent="green"
+          hint={biggest?.category || '—'}
+        />
+      </div>
+
+      <div className="filter-panel">
         <FilterBar
           preset={preset} onPresetChange={setPreset}
           customFrom={from} customTo={to}
@@ -178,81 +234,59 @@ export default function Expenses() {
           categories={categories}
           searchTerm={search} onSearchChange={setSearch}
         />
+      </div>
 
-        {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
+      {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
 
-        {visible.length > 0 && (
-          <div className="ui-card" style={{ marginBottom: 'var(--sp-4)' }}>
-            <div className="ui-metrics" style={{ marginTop: 0, paddingTop: 0, borderTop: 0 }}>
-              <div>
-                <span className="ui-metric__label">Média por dia ativo</span>
-                <span className="ui-metric__value">{formatMoney(activeDays ? total / activeDays : 0, symbol)}</span>
-                <span className="ui-metric__hint">{activeDays} {activeDays === 1 ? 'dia' : 'dias'} com despesas</span>
-              </div>
-              <div>
-                <span className="ui-metric__label">Maior despesa</span>
-                <span className="ui-metric__value">{biggest ? formatMoney(biggest.amount, symbol) : '—'}</span>
-                <span className="ui-metric__hint">{biggest?.category || '—'}</span>
-              </div>
-              <div>
-                <span className="ui-metric__label">Por transação</span>
-                <span className="ui-metric__value">{formatMoney(visible.length ? total / visible.length : 0, symbol)}</span>
-                <span className="ui-metric__hint">em média</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="ui-card ui-card--tight">
-          {loading
-            ? <SkeletonCard height={360} style={{ borderRadius: 'var(--r-md)' }} />
-            : (
-              <ExpenseList
-                transactions={pageRows}
-                symbol={symbol}
-                onEdit={(tx) => { setEditing(tx); setShowModal(true); }}
-                onDelete={handleDelete}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onSort={handleSort}
-              />
-            )}
-        </div>
-
-        {!loading && pageCount > 1 && (
-          <nav className="ui-pager" aria-label="Paginação">
-            <Button
-              variant="ghost" size="sm"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </Button>
-            <span className="ui-pager__status">
-              {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sorted.length)} de {sorted.length}
-            </span>
-            <Button
-              variant="ghost" size="sm"
-              onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
-              disabled={currentPage === pageCount}
-            >
-              Seguinte
-            </Button>
-          </nav>
-        )}
-
-        {showModal && (
-          <Modal title={editing ? 'Editar despesa' : 'Nova despesa'} onClose={closeModal} maxWidth={520}>
-            <ExpenseForm
-              categories={categories}
-              initialData={editing}
-              onSubmit={handleSubmit}
-              onCancel={closeModal}
-              submitLabel={editing ? 'Guardar' : 'Adicionar'}
+      <div className="ui-card ui-card--tight">
+        {loading
+          ? <SkeletonCard height={360} style={{ borderRadius: 'var(--r-md)' }} />
+          : (
+            <ExpenseList
+              transactions={pageRows}
+              symbol={symbol}
+              onEdit={(tx) => { setEditing(tx); setShowModal(true); }}
+              onDelete={handleDelete}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
             />
-          </Modal>
-        )}
-      </main>
-    </div>
+          )}
+      </div>
+
+      {!loading && pageCount > 1 && (
+        <nav className="ui-pager" aria-label="Paginação">
+          <Button
+            variant="ghost" size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Anterior
+          </Button>
+          <span className="ui-pager__status">
+            {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sorted.length)} de {sorted.length}
+          </span>
+          <Button
+            variant="ghost" size="sm"
+            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+            disabled={currentPage === pageCount}
+          >
+            Seguinte
+          </Button>
+        </nav>
+      )}
+
+      {showModal && (
+        <Modal title={editing ? 'Editar despesa' : 'Nova despesa'} onClose={closeModal} maxWidth={520}>
+          <ExpenseForm
+            categories={categories}
+            initialData={editing}
+            onSubmit={handleSubmit}
+            onCancel={closeModal}
+            submitLabel={editing ? 'Guardar' : 'Adicionar'}
+          />
+        </Modal>
+      )}
+    </AppShell>
   );
 }

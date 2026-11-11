@@ -27,7 +27,8 @@ const canRun = Boolean(process.env.DATABASE_URL);
 
 test('API integration', { skip: !canRun && 'DATABASE_URL not set' }, async (t) => {
   const { Client } = require('pg');
-  const admin = new Client({ connectionString: process.env.DATABASE_URL });
+  const directUrl = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
+  const admin = new Client({ connectionString: directUrl });
   try {
     await admin.connect();
   } catch (e) {
@@ -38,11 +39,15 @@ test('API integration', { skip: !canRun && 'DATABASE_URL not set' }, async (t) =
   await admin.query(`DROP SCHEMA IF EXISTS ${SCHEMA} CASCADE; CREATE SCHEMA ${SCHEMA}`);
   await admin.end();
 
-  const url = new URL(process.env.DATABASE_URL);
+  const url = new URL(directUrl);
   url.searchParams.set('schema', SCHEMA);
+  url.searchParams.delete('channel_binding');
+  const schemaUrl = url.toString();
+  process.env.DATABASE_URL = schemaUrl;
+  process.env.DATABASE_URL_UNPOOLED = schemaUrl;
   execFileSync('npx', ['prisma', 'migrate', 'deploy'], {
     cwd: path.join(__dirname, '..'),
-    env: { ...process.env, DATABASE_URL: url.toString() },
+    env: { ...process.env, DATABASE_URL: schemaUrl, DATABASE_URL_UNPOOLED: schemaUrl },
     stdio: 'pipe',
   });
 

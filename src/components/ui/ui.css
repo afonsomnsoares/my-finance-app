@@ -758,6 +758,78 @@ tr:focus-within .ui-rowactions { opacity: 1; }
 .ui-iconbtn:hover { background: var(--surface-3); color: var(--text); }
 .ui-iconbtn--danger:hover { background: var(--danger-soft); color: var(--danger); }
 
+@media (pointer: coarse), (max-width: 640px) {
+  .ui-btn,
+  .ui-iconbtn,
+  .month-switch__btn,
+  .ui-table__sort {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .ui-iconbtn { width: 44px; height: 44px; }
+}
+
+/* No telemóvel cada linha vira um bloco com o nome da coluna ao lado do valor. */
+@media (max-width: 640px) {
+  .ui-table--stack { display: block; }
+
+  .ui-table--stack thead { display: none; }
+
+  .ui-table--stack thead:has(.ui-table__sort) { display: block; margin-bottom: var(--sp-3); }
+
+  .ui-table--stack thead:has(.ui-table__sort) tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ui-table--stack thead th {
+    display: block;
+    border: 0;
+    padding: 0;
+  }
+
+  .ui-table--stack thead th:last-child { display: none; }
+
+  .ui-table--stack tbody,
+  .ui-table--stack tr { display: block; }
+
+  .ui-table--stack tr {
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ui-table--stack tbody tr:last-child { border-bottom: 0; }
+
+  .ui-table--stack td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: 4px 0;
+    border: 0;
+    max-width: none !important;
+    white-space: normal !important;
+    text-align: right;
+  }
+
+  .ui-table--stack td::before {
+    content: attr(data-label);
+    color: var(--text-subtle);
+    font-size: var(--fs-2xs);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    text-align: left;
+  }
+
+  .ui-table--stack td[data-label=''] { display: block; text-align: left; }
+  .ui-table--stack td[data-label='']::before { content: none; }
+
+  .ui-table--stack .ui-rowactions { opacity: 1; justify-content: flex-end; }
+}
+
 /* ─── Barra de alocação ─── */
 .alloc-bar {
   display: flex;

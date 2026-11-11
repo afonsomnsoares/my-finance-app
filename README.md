@@ -117,11 +117,20 @@ Para confirmar o estado a qualquer momento:
 npm run check:security
 ```
 
+### Deploy (Render)
+
+O `render.yaml` na raiz descreve um Web Service privado. No painel da Render:
+liga o repositório, confirma o blueprint, e preenche `DATABASE_URL` com o URL
+pooled do Neon. O `SESSION_SECRET` é gerado pela Render. O endereço público
+(`RENDER_EXTERNAL_URL`) entra sozinho na lista de CORS.
+
+No telemóvel, abre o `https://….onrender.com` e usa **Adicionar ao ecrã inicial**.
+
 ### Notas de produção
 
 - Serve sempre **por HTTPS**. O cookie de sessão é `Secure` quando
   `NODE_ENV=production` e um browser não o envia em texto simples.
-- Define `CORS_ORIGIN` para o domínio real.
+- Define `CORS_ORIGIN` se o site for servido noutro domínio que não o da Render.
 - Atrás de reverse proxy, o `trust proxy` está em `1` (um hop). Ajusta se
   tiveres mais, mas nunca para `true` — permitiria falsear o IP e contornar o
   rate limiting.

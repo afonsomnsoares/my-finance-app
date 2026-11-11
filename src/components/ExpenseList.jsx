@@ -36,8 +36,8 @@ export default function ExpenseList({
   }
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table className="ui-table ui-table--rows">
+    <div>
+      <table className="ui-table ui-table--rows ui-table--stack">
         <thead>
           <tr>
             {COLUMNS.map(({ field, label, numeric }) => {
@@ -62,15 +62,15 @@ export default function ExpenseList({
         <tbody>
           {transactions.map((tx) => (
             <tr key={tx.id}>
-              <td className="muted" style={{ whiteSpace: 'nowrap' }}>{formatDate(tx.date, 'full')}</td>
-              <td>{tx.category}</td>
-              <td className="muted" style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <td className="muted" data-label="Data" style={{ whiteSpace: 'nowrap' }}>{formatDate(tx.date, 'full')}</td>
+              <td data-label="Categoria">{tx.category}</td>
+              <td className="muted" data-label="Descrição" style={{ maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {tx.description || '—'}
               </td>
-              <td className="num" style={{ fontWeight: 'var(--fw-semibold)' }}>
+              <td className="num" data-label="Valor" style={{ fontWeight: 'var(--fw-semibold)' }}>
                 −{formatMoney(tx.amount, symbol)}
               </td>
-              <td className="num">
+              <td className="num" data-label="">
                 <div className="ui-rowactions">
                   <button type="button" className="ui-iconbtn" onClick={() => onEdit(tx)} aria-label={`Editar despesa de ${formatMoney(tx.amount, symbol)}`}>
                     <FiEdit2 size={14} />

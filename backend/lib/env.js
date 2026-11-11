@@ -3,7 +3,29 @@ const path = require('path');
 // Resolved from this file, not the working directory: `npm start` at the repo
 // root runs `node backend/server.js`, where a cwd-relative lookup found no .env.
 // Variables already set in the environment still win.
+// The integration suite sets these before importing the app. Keep them so a
+// later .env.local load cannot point the suite at the real database.
+const pinnedDatabaseUrl = process.env.DB_SCHEMA
+  ? {
+      DATABASE_URL: process.env.DATABASE_URL,
+      DATABASE_URL_UNPOOLED: process.env.DATABASE_URL_UNPOOLED,
+    }
+  : null;
+
 require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+// Neon writes the live connection strings to the repo-root .env.local.
+// DATABASE_URL is the pooled URL used for application queries.
+require('dotenv').config({
+  path: path.join(__dirname, '..', '..', '.env.local'),
+  override: true,
+  quiet: true,
+});
+
+if (pinnedDatabaseUrl) {
+  for (const key of ['DATABASE_URL', 'DATABASE_URL_UNPOOLED']) {
+    if (pinnedDatabaseUrl[key]) process.env[key] = pinnedDatabaseUrl[key];
+  }
+}
 
 const { z } = require('zod');
 
@@ -13,19 +35,18 @@ const { z } = require('zod');
  * the process, not degrade quietly to a default.
  */
 const schema = z.object({
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required.'),
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required.').refine(
+    (value) => value.startsWith('postgres://') || value.startsWith('postgresql://'),
+    'DATABASE_URL must be a PostgreSQL connection string.'
+  ),
+  DATABASE_URL_UNPOOLED: z.string().optional(),
   SESSION_SECRET: z
     .string()
     .min(32, 'SESSION_SECRET must be at least 32 characters. Generate one with: openssl rand -base64 48'),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(5000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
-  // Comma-separated list of origins allowed to call the API with credentials.
-  CORS_ORIGIN: z.string().default('http://localhost:3000,http://127.0.0.1:3000'),
-  // Postgres schema to run in. Only the integration tests set this, so they
-  // never touch the real tables in `public`.
-  DB_SCHEMA: z.string().regex(/^[a-z_][a-z0-9_]*$/, 'DB_SCHEMA must be a plain identifier.').optional(),
-  // The zone months and days are counted in. See lib/dates.js.
+  CORS_ORIGIN: z.string().default('http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001'),
   APP_TIMEZONE: z.string().default('Europe/Lisbon').refine((tz) => {
     try { new Intl.DateTimeFormat('en', { timeZone: tz }); return true; } catch { return false; }
   }, 'APP_TIMEZONE must be an IANA zone name, e.g. Europe/Lisbon.'),
@@ -52,8 +73,18 @@ const env = parsed.data;
  */
 process.env.TZ = env.APP_TIMEZONE;
 
+/*
+ * Render sets RENDER_EXTERNAL_URL to the public https address. The phone
+ * loads the site from that origin, so API calls must be allowed there
+ * without pasting the address into CORS_ORIGIN after the first deploy.
+ */
+const corsOrigins = [
+  ...env.CORS_ORIGIN.split(',').map((o) => o.trim()),
+  process.env.RENDER_EXTERNAL_URL,
+].filter(Boolean);
+
 module.exports = {
   ...env,
   isProd: env.NODE_ENV === 'production',
-  corsOrigins: env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean),
+  corsOrigins,
 };

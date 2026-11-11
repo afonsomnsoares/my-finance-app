@@ -141,7 +141,11 @@ const profileUpdate = z.object({
   firstName: optionalText(100),
   lastName: optionalText(100),
   phoneNumber: optionalText(40),
-  birthday: isoDate.optional().nullable(),
+  // A blank date input posts "" — not null and not an omitted field.
+  birthday: z.preprocess(
+    (v) => (v === '' ? null : v),
+    z.union([z.null(), isoDate]).optional()
+  ),
   email: z.email('Invalid email.').max(200).optional(),
   username: z.string().trim().min(1).max(100).optional(),
   monthlyIncome: optionalMoney,

@@ -1,8 +1,17 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { FiLock, FiLogIn } from 'react-icons/fi';
+import { FiBarChart2, FiFileText, FiGrid, FiLogIn, FiRepeat, FiTrendingUp } from 'react-icons/fi';
 import { useAuth } from '../auth/AuthContext';
-import { Button, Card, Field } from '../components/ui';
+import { Button, Field } from '../components/ui';
+import './App.css';
+
+const AREAS = [
+  { label: 'Painel', Icon: FiGrid },
+  { label: 'Transações', Icon: FiRepeat },
+  { label: 'Análises', Icon: FiBarChart2 },
+  { label: 'Investimentos', Icon: FiTrendingUp },
+  { label: 'Relatórios', Icon: FiFileText },
+];
 
 export default function Login() {
   const { login, isAuthenticated, checking } = useAuth();
@@ -44,68 +53,78 @@ export default function Login() {
   };
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center px-3" style={{ background: 'var(--bg)' }}>
-      <div style={{ width: '100%', maxWidth: 380 }}>
-        <div className="text-center mb-4">
-          <div
-            className="d-inline-flex align-items-center justify-content-center mb-3"
-            style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--accent-soft)' }}
-          >
-            <FiLock size={22} style={{ color: 'var(--accent)' }} />
-          </div>
-          <h1 className="fw-bold mb-1" style={{ fontSize: 'var(--fs-xl)' }}>Personal Finance</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', marginBottom: 0 }}>
-            Inicia sessão para continuar.
-          </p>
-        </div>
-
-        <Card>
-          <form onSubmit={handleSubmit} noValidate>
-            <Field
-              label="Utilizador ou email"
-              name="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              autoFocus
-              required
-            />
-
-            <div className="mt-3">
-              <Field
-                label="Password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </div>
-
-            {error && (
-              <div className="alert alert-danger mt-3 mb-0 py-2" role="alert" style={{ fontSize: 'var(--fs-sm)' }}>
-                {error}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              variant="primary"
-              block
-              className="mt-4"
-              disabled={submitting || !username || !password}
-              icon={<FiLogIn size={16} />}
-            >
-              {submitting ? 'A entrar…' : 'Entrar'}
-            </Button>
-          </form>
-        </Card>
-
-        <p className="text-center mt-3 mb-0" style={{ color: 'var(--text-subtle)', fontSize: 'var(--fs-2xs)', lineHeight: 1.6 }}>
-          Primeira vez? Corre <code>npm run set-password</code> na pasta do projeto
-          para criares a tua password.
+    <div className="login-page">
+      <section className="login-intro">
+        <p className="ui-eyebrow">Conta pessoal</p>
+        <h1 className="login-intro__title">My Personal Finance</h1>
+        <p className="login-intro__lead">
+          Despesas, orçamentos e investimentos, no mesmo sítio em que os vês depois de entrar.
         </p>
+        <ul className="login-intro__list">
+          {AREAS.map(({ label, Icon }) => (
+            <li key={label} className="login-intro__item">
+              <Icon size={16} aria-hidden="true" />
+              <span>{label}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="login-main">
+        <div className="login-panel">
+          <header className="page-head">
+            <div>
+              <p className="ui-eyebrow">Sessão</p>
+              <h2 className="page-title">Entrar</h2>
+              <p className="page-subtitle">
+                Utilizador e password da tua conta.
+              </p>
+            </div>
+          </header>
+
+          <div className="ui-card">
+              <form onSubmit={handleSubmit} noValidate>
+                <Field
+                  label="Utilizador ou email"
+                  name="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  autoFocus
+                  required
+                />
+
+                <div className="mt-3">
+                  <Field
+                    label="Password"
+                    type="password"
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+
+                {error && (
+                  <div className="ui-alert ui-alert--danger mt-3" role="alert" style={{ marginBottom: 0 }}>
+                    {error}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  block
+                  className="mt-4"
+                  disabled={submitting || !username || !password}
+                  icon={<FiLogIn size={16} />}
+                >
+                  {submitting ? 'A entrar…' : 'Entrar'}
+                </Button>
+              </form>
+            </div>
+        </div>
       </div>
     </div>
   );

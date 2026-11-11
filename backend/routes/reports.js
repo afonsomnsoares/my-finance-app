@@ -1,6 +1,7 @@
 const express = require('express');
 
 const prisma = require('../lib/prisma');
+const { plain } = prisma;
 const { logger } = require('../lib/logger');
 const { monthRange, resolvePeriod, previousPeriod, localDateKey } = require('../lib/dates');
 const { sumAmounts, totalsByCategory } = require('../lib/money');
@@ -11,6 +12,9 @@ const { USER_FIELDS } = require('./profile');
 const ah = require('./asyncHandler');
 
 const router = express.Router();
+async function userTransactions(req) {
+  return plain(await prisma.transaction.findMany({ where: scopeToUser(req) }));
+}
 
 /* ───────── Reports ───────── */
 
@@ -18,23 +22,22 @@ router.get('/reports', validate({ query: schemas.reportQuery }), ah(async (req, 
   const { from, to, label } = resolvePeriod(req.validatedQuery);
   const prev = previousPeriod({ type: req.validatedQuery.type, from });
 
-  const [transactions, previousTransactions] = await Promise.all([
-    prisma.transaction.findMany({
-      where: scopeToUser(req, { date: { gte: from, lte: to } }),
-      orderBy: { date: 'desc' },
-    }),
-    prisma.transaction.findMany({
-      where: scopeToUser(req, { date: { gte: prev.from, lte: prev.to } }),
-      select: { amount: true, category: true },
-    }),
-  ]);
+  const allTx = await userTransactions(req);
+
+  const transactions = allTx.filter((t) => {
+    const d = new Date(t.date);
+    return d >= from && d <= to;
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const previousTransactions = allTx.filter((t) => {
+    const d = new Date(t.date);
+    return d >= prev.from && d <= prev.to;
+  });
 
   const totals = totalsByCategory(transactions);
   const counts = {};
   for (const t of transactions) counts[t.category] = (counts[t.category] || 0) + 1;
 
-  // Total do período anterior e o mesmo por categoria, para o cliente poder
-  // mostrar a variação de cada linha sem fazer um segundo pedido.
   const previousByCategory = totalsByCategory(previousTransactions);
 
   res.json({
@@ -56,17 +59,22 @@ router.get('/reports', validate({ query: schemas.reportQuery }), ah(async (req, 
 /* ───────── Insights ───────── */
 
 router.get('/insights', ah(async (req, res) => {
-  const user = await prisma.user.findUnique({ where: { id: req.userId }, select: USER_FIELDS });
+  const user = plain(await prisma.user.findUnique({ where: { id: req.userId } }));
   if (!user) return res.status(404).json({ error: 'User not found.' });
 
   const now = new Date();
   const month = monthRange(now.getFullYear(), now.getMonth());
   const prevMonth = monthRange(now.getFullYear(), now.getMonth() - 1);
 
-  const [monthTx, prevMonthTx] = await Promise.all([
-    prisma.transaction.findMany({ where: scopeToUser(req, { date: { gte: month.from, lte: month.to } }) }),
-    prisma.transaction.findMany({ where: scopeToUser(req, { date: { gte: prevMonth.from, lte: prevMonth.to } }) }),
-  ]);
+  const allTx = await userTransactions(req);
+  const monthTx = allTx.filter((t) => {
+    const d = new Date(t.date);
+    return d >= month.from && d <= month.to;
+  });
+  const prevMonthTx = allTx.filter((t) => {
+    const d = new Date(t.date);
+    return d >= prevMonth.from && d <= prevMonth.to;
+  });
 
   const spentThisMonth = sumAmounts(monthTx);
   const spentPrevMonth = sumAmounts(prevMonthTx);
@@ -116,10 +124,11 @@ router.get('/reports/export', validate({ query: schemas.exportQuery }), ah(async
   const { format } = req.validatedQuery;
   const { from, to, label } = resolvePeriod(req.validatedQuery);
 
-  const transactions = await prisma.transaction.findMany({
-    where: scopeToUser(req, { date: { gte: from, lte: to } }),
-    orderBy: { date: 'desc' },
-  });
+  const allTx = await userTransactions(req);
+  const transactions = allTx.filter((t) => {
+    const d = new Date(t.date);
+    return d >= from && d <= to;
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
   logger.info({ userId: req.userId, format, count: transactions.length }, 'report_exported');
 
@@ -163,8 +172,7 @@ router.get('/reports/export', validate({ query: schemas.exportQuery }), ah(async
   doc.fontSize(10).font('Helvetica-Bold').fillColor('#0f172a').text('Transações:', 40, doc.y);
   doc.moveDown(0.5);
 
-  // Every transaction is written; pdfkit paginates on its own. The old cap of
-  // 50 silently dropped the rest of the period from the report.
+  // Every transaction is written; pdfkit paginates on its own.
   transactions.forEach((t) => {
     const d = localDateKey(t.date);
     doc.fontSize(8).font('Helvetica').fillColor('#0f172a')

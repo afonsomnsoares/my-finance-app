@@ -1,6 +1,7 @@
 const express = require('express');
 
 const prisma = require('../lib/prisma');
+const { plain } = prisma;
 const { logger, securityEvent } = require('../lib/logger');
 const { verifyPassword } = require('../lib/password');
 const validate = require('../middleware/validate');
@@ -71,17 +72,15 @@ router.post('/logout', (req, res) => {
 router.get('/session', ah(async (req, res) => {
   if (!req.session?.userId) return res.json({ authenticated: false });
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.session.userId },
-    select: { id: true, username: true, firstName: true },
-  });
+  const user = await prisma.user.findUnique({ where: { id: req.session.userId } });
 
   // The session outlived the account it pointed at.
   if (!user) {
     return req.session.destroy(() => res.json({ authenticated: false }));
   }
 
-  res.json({ authenticated: true, user });
+  const { password, ...userWithoutPassword } = plain(user);
+  res.json({ authenticated: true, user: userWithoutPassword });
 }));
 
 module.exports = router;

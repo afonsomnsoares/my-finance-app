@@ -33,7 +33,7 @@ export default function CategoryTrends({ trends, symbol, window }) {
         </div>
       </div>
 
-      <table className="ui-table">
+      <table className="ui-table ui-table--stack">
         <thead>
           <tr>
             <th>Categoria</th>
@@ -54,10 +54,10 @@ export default function CategoryTrends({ trends, symbol, window }) {
             const Icon = t.isNew ? FiPlus : up ? FiArrowUp : FiArrowDown;
             return (
               <tr key={t.category}>
-                <td style={{ fontWeight: 'var(--fw-medium)' }}>{t.category}</td>
-                <td className="num muted">{formatMoney(t.previous, symbol)}</td>
-                <td className="num">{formatMoney(t.current, symbol)}</td>
-                <td className="num">
+                <td data-label="Categoria" style={{ fontWeight: 'var(--fw-medium)' }}>{t.category}</td>
+                <td className="num muted" data-label="Antes">{formatMoney(t.previous, symbol)}</td>
+                <td className="num" data-label="Agora">{formatMoney(t.current, symbol)}</td>
+                <td className="num" data-label="Variação">
                   {flat ? (
                     <span className="muted">—</span>
                   ) : (

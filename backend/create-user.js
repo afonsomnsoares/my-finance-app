@@ -100,7 +100,10 @@ async function main() {
   });
 
   // As sessões antigas apontavam para um utilizador que já não existe.
-  await pool.query('DELETE FROM user_sessions');
+  // Sessions live in memory, so there is no user_sessions table to clear.
+  await pool.query('DELETE FROM user_sessions').catch((err) => {
+    if (err.code !== '42P01') throw err;
+  });
 
   console.log(`\nConta criada: ${user.firstName} ${user.lastName} — ${user.username} <${user.email}>`);
   console.log('Já podes entrar em http://localhost:3000');

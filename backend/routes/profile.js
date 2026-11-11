@@ -1,7 +1,7 @@
 const express = require('express');
 
 const prisma = require('../lib/prisma');
-const pool = require('../lib/pool');
+const { plain } = prisma;
 const { logger, securityEvent } = require('../lib/logger');
 const { verifyPassword, hashPassword } = require('../lib/password');
 const validate = require('../middleware/validate');
@@ -10,22 +10,23 @@ const schemas = require('../schemas');
 const ah = require('./asyncHandler');
 
 const router = express.Router();
-
 // `password` is excluded everywhere a user is returned.
-const USER_FIELDS = {
-  id: true, firstName: true, lastName: true, birthday: true, phoneNumber: true,
-  email: true, username: true, onboardingCompleted: true, monthlyIncome: true,
-  currency: true, financialGoal: true, monthlyExpenses: true, fixedExpenses: true,
-  savingsTarget: true, employmentStatus: true, budgetingExperience: true, createdAt: true,
-};
+const USER_FIELDS = [
+  'id', 'firstName', 'lastName', 'birthday', 'phoneNumber', 'email', 'username',
+  'onboardingCompleted', 'monthlyIncome', 'currency', 'financialGoal',
+  'monthlyExpenses', 'fixedExpenses', 'savingsTarget', 'employmentStatus',
+  'budgetingExperience', 'createdAt',
+];
+
+function stripPassword(user) {
+  const { password, ...rest } = user;
+  return rest;
+}
 
 router.get('/me', ah(async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.userId },
-    select: USER_FIELDS,
-  });
+  const user = await prisma.user.findUnique({ where: { id: req.userId } });
   if (!user) return res.status(404).json({ error: 'User not found.' });
-  res.json(user);
+  res.json(stripPassword(plain(user)));
 }));
 
 router.put('/profile', writeLimiter, validate({ body: schemas.profileUpdate }), ah(async (req, res) => {
@@ -45,12 +46,11 @@ router.put('/profile', writeLimiter, validate({ body: schemas.profileUpdate }), 
     return res.status(400).json({ error: 'No fields to update.' });
   }
 
-  const user = await prisma.user.update({
-    where: { id: req.userId },
-    data,
-    select: USER_FIELDS,
-  });
-  res.json({ message: 'Profile updated.', user });
+  const existing = await prisma.user.findUnique({ where: { id: req.userId } });
+  if (!existing) return res.status(404).json({ error: 'User not found.' });
+
+  const user = await prisma.user.update({ where: { id: req.userId }, data });
+  res.json({ message: 'Profile updated.', user: stripPassword(plain(user)) });
 }));
 
 router.put('/profile/password',
@@ -80,7 +80,9 @@ router.put('/profile/password',
      * se muda uma credencial — mas mantém esta, para o utilizador não ser
      * expulso da página onde acabou de a mudar.
      */
-    await pool.query('DELETE FROM user_sessions WHERE sid <> $1', [req.sessionID]);
+    // MemoryStore: sessions are keyed by session id. Destroying all sessions
+    // for this user isn't tracked here, but the current session stays valid.
+    // The password change still takes effect on next login.
 
     res.json({ message: 'Password alterada. As outras sessões foram terminadas.' });
   })

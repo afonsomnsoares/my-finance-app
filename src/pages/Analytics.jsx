@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { FiActivity, FiBarChart2, FiCalendar } from 'react-icons/fi';
 
-import DashboardNavbar from '../components/DashboardNavbar';
+import AppShell from '../components/AppShell';
+import MetricCard from '../components/MetricCard';
 import SkeletonCard from '../components/SkeletonCard';
 import { Field } from '../components/ui';
 
@@ -75,36 +77,34 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div className="ui-page">
-        <DashboardNavbar />
-        <div className="ui-page__body">
-          <SkeletonCard height={44} style={{ borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-6)', maxWidth: 260 }} />
-          <SkeletonCard height={340} style={{ borderRadius: 'var(--r-lg)', marginBottom: 'var(--sp-4)' }} />
-          <div className="ui-grid ui-grid--2">
-            <SkeletonCard height={300} style={{ borderRadius: 'var(--r-lg)' }} />
-            <SkeletonCard height={300} style={{ borderRadius: 'var(--r-lg)' }} />
-          </div>
+      <AppShell>
+        <SkeletonCard height={44} style={{ borderRadius: 'var(--r-md)', marginBottom: 'var(--sp-6)', maxWidth: 260 }} />
+        <div className="stat-grid">
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} height={140} style={{ borderRadius: 'var(--r-lg)' }} />)}
         </div>
-      </div>
+        <SkeletonCard height={340} style={{ borderRadius: 'var(--r-lg)', marginBottom: 'var(--sp-4)' }} />
+        <div className="ui-grid ui-grid--2">
+          <SkeletonCard height={300} style={{ borderRadius: 'var(--r-lg)' }} />
+          <SkeletonCard height={300} style={{ borderRadius: 'var(--r-lg)' }} />
+        </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="ui-page">
-      <DashboardNavbar />
-
-      <main className="ui-page__body">
-        <header className="ui-page__head">
-          <div>
-            <span className="ui-eyebrow">Análises</span>
-            <h1 className="ui-page__title">{formatMoney(windowTotal, symbol)}</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', margin: 'var(--sp-1) 0 0' }}>
-              {monthsWithData > 0
-                ? `Em ${monthsWithData} ${monthsWithData === 1 ? 'mês' : 'meses'} com registos`
-                : 'Sem registos neste período'}
-            </p>
-          </div>
-          <div style={{ minWidth: 200 }}>
+    <AppShell>
+      <header className="page-head">
+        <div>
+          <span className="ui-eyebrow">Análises</span>
+          <h1 className="page-title">Análises</h1>
+          <p className="page-subtitle">
+            {monthsWithData > 0
+              ? `${formatMoney(windowTotal, symbol)} em ${monthsWithData} ${monthsWithData === 1 ? 'mês' : 'meses'} com registos`
+              : 'Sem registos neste período'}
+          </p>
+        </div>
+        <div className="page-head__actions">
+          <div className="page-head__select">
             <Field
               label="Período"
               as="select"
@@ -114,17 +114,41 @@ export default function Analytics() {
               {WINDOWS.map((w) => <option key={w.value} value={w.value}>{w.label}</option>)}
             </Field>
           </div>
-        </header>
-
-        {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
-
-        <MonthlyTrend history={history} symbol={symbol} monthlyBudget={monthlyBudget} average={average} />
-
-        <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
-          <CategoryTrends trends={trends} symbol={symbol} window={trendWindow} />
-          <CategoryBreakdown transactions={completedMonths} symbol={symbol} limit={8} />
         </div>
-      </main>
-    </div>
+      </header>
+
+      <div className="stat-grid">
+        <MetricCard
+          label="Total no período"
+          value={formatMoney(windowTotal, symbol)}
+          icon={<FiBarChart2 size={16} />}
+          accent="blue"
+          hint={`${months} meses analisados`}
+        />
+        <MetricCard
+          label="Média mensal"
+          value={formatMoney(average, symbol)}
+          icon={<FiActivity size={16} />}
+          accent="green"
+          hint="gasto médio por mês"
+        />
+        <MetricCard
+          label="Meses com registos"
+          value={`${monthsWithData}`}
+          icon={<FiCalendar size={16} />}
+          accent="orange"
+          hint={monthlyBudget > 0 ? `Orçamento: ${formatMoney(monthlyBudget, symbol)}` : 'Sem orçamento definido'}
+        />
+      </div>
+
+      {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
+
+      <MonthlyTrend history={history} symbol={symbol} monthlyBudget={monthlyBudget} average={average} />
+
+      <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
+        <CategoryTrends trends={trends} symbol={symbol} window={trendWindow} />
+        <CategoryBreakdown transactions={completedMonths} symbol={symbol} limit={8} />
+      </div>
+    </AppShell>
   );
 }

@@ -187,13 +187,16 @@ export function useInvestments() {
     setError('');
     try {
       const payload = { ...form, amount: parseFloat(form.amount), buyPrice: parseFloat(form.buyPrice) };
+      let next;
       if (editing) {
         const { data } = await api.put(`/api/investments/${editing.id}`, payload);
-        setInvestments(investments.map((i) => (i.id === data.id ? data : i)));
+        next = investments.map((i) => (i.id === data.id ? data : i));
       } else {
         const { data } = await api.post('/api/investments', payload);
-        setInvestments([data, ...investments]);
+        next = [data, ...investments];
       }
+      setInvestments(next);
+      fetchPrices(next.map((i) => i.name).filter(Boolean));
       setShowModal(false);
       resetForm();
     } catch {

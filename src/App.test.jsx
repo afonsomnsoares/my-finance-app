@@ -12,6 +12,6 @@ test('renders the app without crashing', () => {
 test('shows a 404 page for an unknown route', () => {
   window.history.pushState({}, '', '/rota-que-nao-existe');
   render(<App />);
-  expect(screen.getByText('404')).toBeInTheDocument();
-  expect(screen.getByText('Página não encontrada.')).toBeInTheDocument();
+  expect(screen.getByText('Erro 404')).toBeInTheDocument();
+  expect(screen.getByText('Página não encontrada')).toBeInTheDocument();
 });

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { FiUser } from 'react-icons/fi';
+import { FiSave, FiUser } from 'react-icons/fi';
 
-import DashboardNavbar from '../components/DashboardNavbar';
+import AppShell from '../components/AppShell';
 import BudgetSettings from '../components/BudgetSettings';
 import PasswordChange from '../components/PasswordChange';
 import { Button, Field } from '../components/ui';
@@ -42,6 +42,12 @@ const fromUser = (u) => ({
   employmentStatus: u.employmentStatus || '',
   budgetingExperience: u.budgetingExperience || '',
 });
+
+function initials(form) {
+  const first = form?.firstName || form?.username || '';
+  const last = form?.lastName || '';
+  return (`${first.charAt(0)}${last.charAt(0)}`.toUpperCase()) || 'PF';
+}
 
 export default function Profile() {
   const [form, setForm] = useState(null);
@@ -85,89 +91,99 @@ export default function Profile() {
 
   if (loading || !form) {
     return (
-      <div className="ui-page">
-        <DashboardNavbar />
-        <div className="ui-page__body">
-          <div className="ui-card"><div className="ui-empty">A carregar…</div></div>
-        </div>
-      </div>
+      <AppShell>
+        <div className="ui-card"><div className="ui-empty">A carregar…</div></div>
+      </AppShell>
     );
   }
 
   const symbol = getCurrencySymbol(form.currency);
+  const displayName = [form.firstName, form.lastName].filter(Boolean).join(' ') || form.username || 'A minha conta';
 
   return (
-    <div className="ui-page">
-      <DashboardNavbar />
-
-      <main className="ui-page__body" style={{ maxWidth: 680 }}>
-        <header className="ui-page__head">
+    <AppShell>
+      <header className="page-head">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+          <span
+            className="avatar"
+            aria-hidden="true"
+            style={{ width: 54, height: 54, fontSize: 'var(--fs-base)' }}
+          >
+            {initials(form)}
+          </span>
           <div>
             <span className="ui-eyebrow">
               <FiUser size={12} style={{ marginRight: 4 }} aria-hidden="true" />Perfil
             </span>
-            <h1 className="ui-page__title">{form.firstName} {form.lastName}</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-sm)', margin: 'var(--sp-1) 0 0' }}>
-              {form.email}
-            </p>
+            <h1 className="page-title">{displayName}</h1>
+            <p className="page-subtitle">{form.email || 'Sem email definido'}</p>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
-        {success && <div className="ui-alert" role="status" style={{ marginBottom: 'var(--sp-4)', borderColor: 'var(--success)' }}>{success}</div>}
+      {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
+      {success && <div className="ui-alert" role="status" style={{ marginBottom: 'var(--sp-4)', borderColor: 'var(--success)' }}>{success}</div>}
 
-        <form onSubmit={handleSubmit}>
-          <div className="ui-card">
-            <h2 className="ui-card__title">Dados pessoais</h2>
-            <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
-              <Field label="Nome" value={form.firstName} onChange={change('firstName')} autoComplete="given-name" />
-              <Field label="Apelido" value={form.lastName} onChange={change('lastName')} autoComplete="family-name" />
-              <Field label="Email" type="email" value={form.email} onChange={change('email')} autoComplete="email" />
-              <Field label="Utilizador" value={form.username} onChange={change('username')} hint="Usado para iniciar sessão" autoComplete="username" />
-              <Field label="Telefone" type="tel" value={form.phoneNumber} onChange={change('phoneNumber')} autoComplete="tel" />
-              <Field label="Data de nascimento" type="date" value={form.birthday} onChange={change('birthday')} />
+      <div className="profile-layout">
+        <div className="profile-layout__main">
+          <form onSubmit={handleSubmit}>
+            <div className="ui-card">
+              <h2 className="ui-card__title">Dados pessoais</h2>
+              <p className="ui-card__subtitle">Como apareces na aplicação e como te identificas.</p>
+              <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
+                <Field label="Nome" value={form.firstName} onChange={change('firstName')} autoComplete="given-name" />
+                <Field label="Apelido" value={form.lastName} onChange={change('lastName')} autoComplete="family-name" />
+                <Field label="Email" type="email" value={form.email} onChange={change('email')} autoComplete="email" />
+                <Field label="Utilizador" value={form.username} onChange={change('username')} hint="Usado para iniciar sessão" autoComplete="username" />
+                <Field label="Telefone" type="tel" value={form.phoneNumber} onChange={change('phoneNumber')} autoComplete="tel" />
+                <Field label="Data de nascimento" type="date" value={form.birthday} onChange={change('birthday')} />
+              </div>
             </div>
-          </div>
 
-          <div className="ui-card" style={{ marginTop: 'var(--sp-4)' }}>
-            <h2 className="ui-card__title">Dados financeiros</h2>
-            <p className="ui-card__subtitle">Alimentam o saldo, o orçamento e os alertas do painel.</p>
-            <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
-              <Field label="Rendimento mensal" type="number" min="0" step="0.01" hint={`Em ${symbol}`} value={form.monthlyIncome} onChange={change('monthlyIncome')} placeholder="2500.00" />
-              <Field label="Orçamento mensal" type="number" min="0" step="0.01" hint="Quanto planeias gastar" value={form.monthlyExpenses} onChange={change('monthlyExpenses')} placeholder="1400.00" />
-              <Field label="Despesas fixas" type="number" min="0" step="0.01" hint="Renda, contas, seguros" value={form.fixedExpenses} onChange={change('fixedExpenses')} placeholder="900.00" />
-              <Field label="Meta de poupança" type="number" min="0" step="0.01" hint="Por mês" value={form.savingsTarget} onChange={change('savingsTarget')} placeholder="300.00" />
-              <Field label="Moeda" as="select" value={form.currency} onChange={change('currency')}>
-                {CURRENCIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </Field>
-              <Field label="Objetivo financeiro" as="select" value={form.financialGoal} onChange={change('financialGoal')}>
-                <option value="">Sem objetivo definido</option>
-                {GOAL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </Field>
-              <Field label="Situação profissional" as="select" value={form.employmentStatus} onChange={change('employmentStatus')}>
-                <option value="">Não indicada</option>
-                {EMPLOYMENT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </Field>
-              <Field label="Experiência com orçamentos" as="select" value={form.budgetingExperience} onChange={change('budgetingExperience')}>
-                <option value="">Não indicada</option>
-                {EXPERIENCE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </Field>
+            <div className="ui-card" style={{ marginTop: 'var(--sp-4)' }}>
+              <h2 className="ui-card__title">Dados financeiros</h2>
+              <p className="ui-card__subtitle">Alimentam o saldo, o orçamento e os alertas do painel.</p>
+              <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
+                <Field label="Rendimento mensal" type="number" min="0" step="0.01" hint={`Em ${symbol}`} value={form.monthlyIncome} onChange={change('monthlyIncome')} placeholder="2500.00" />
+                <Field label="Orçamento mensal" type="number" min="0" step="0.01" hint="Quanto planeias gastar" value={form.monthlyExpenses} onChange={change('monthlyExpenses')} placeholder="1400.00" />
+                <Field label="Despesas fixas" type="number" min="0" step="0.01" hint="Renda, contas, seguros" value={form.fixedExpenses} onChange={change('fixedExpenses')} placeholder="900.00" />
+                <Field label="Meta de poupança" type="number" min="0" step="0.01" hint="Por mês" value={form.savingsTarget} onChange={change('savingsTarget')} placeholder="300.00" />
+                <Field label="Moeda" as="select" value={form.currency} onChange={change('currency')}>
+                  {CURRENCIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </Field>
+                <Field label="Objetivo financeiro" as="select" value={form.financialGoal} onChange={change('financialGoal')}>
+                  <option value="">Sem objetivo definido</option>
+                  {GOAL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </Field>
+                <Field label="Situação profissional" as="select" value={form.employmentStatus} onChange={change('employmentStatus')}>
+                  <option value="">Não indicada</option>
+                  {EMPLOYMENT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </Field>
+                <Field label="Experiência com orçamentos" as="select" value={form.budgetingExperience} onChange={change('budgetingExperience')}>
+                  <option value="">Não indicada</option>
+                  {EXPERIENCE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </Field>
+              </div>
             </div>
-          </div>
 
-          <Button type="submit" variant="primary" block className="mt-4" disabled={submitting}>
-            {submitting ? 'A guardar…' : 'Guardar alterações'}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              variant="primary"
+              block
+              className="mt-4"
+              disabled={submitting}
+              icon={<FiSave size={15} />}
+            >
+              {submitting ? 'A guardar…' : 'Guardar alterações'}
+            </Button>
+          </form>
+        </div>
 
-        <section className="ui-section">
+        <div className="profile-layout__side">
           <BudgetSettings symbol={symbol} />
-        </section>
-
-        <section className="ui-section">
           <PasswordChange />
-        </section>
-      </main>
-    </div>
+        </div>
+      </div>
+    </AppShell>
   );
 }

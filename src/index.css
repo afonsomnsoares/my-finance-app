@@ -1,16 +1,30 @@
 @import './styles/tokens.css';
 @import './styles/bootstrap-dark.css';
+@import './styles/shell.css';
 @import './components/ui/ui.css';
 
 /* ─── Base ─── */
+html { background: var(--bg); }
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  /* viewport-fit=cover leva o fundo até à borda; este recuo tira o conteúdo do entalhe. */
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg);
+  color: var(--text);
+  font-size: var(--fs-base);
+  line-height: var(--leading-normal);
+}
+
+::selection {
+  background: var(--accent-soft);
   color: var(--text);
 }
 
@@ -19,10 +33,13 @@ code {
     monospace;
 }
 
-h1, h2, h3, h4, h5, h6 { color: var(--text); }
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+  letter-spacing: var(--tracking-tight);
+}
 
-a { color: var(--accent); }
-a:hover { color: var(--accent-hover); }
+a { color: var(--accent-hover); }
+a:hover { color: var(--accent); }
 
 hr { border-color: var(--border); opacity: 1; }
 

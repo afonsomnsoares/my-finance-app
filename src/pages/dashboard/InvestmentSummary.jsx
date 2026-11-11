@@ -40,7 +40,26 @@ export default function InvestmentSummary({ symbol }) {
     };
   }, [investments, prices]);
 
-  if (investments === null || investments.length === 0) return null;
+  if (investments === null) return null;
+
+  if (investments.length === 0) {
+    return (
+      <div className="ui-card">
+        <div className="ui-card__header">
+          <div>
+            <h3 className="ui-card__title">Carteira</h3>
+            <p className="ui-card__subtitle">Ainda sem ativos</p>
+          </div>
+        </div>
+        <p style={{ margin: '0 0 var(--sp-4)', fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>
+          Regista o primeiro investimento para acompanhares o valor da carteira.
+        </p>
+        <Link to="/app/investments" className="ui-btn ui-btn--secondary ui-btn--sm">
+          Adicionar ativo <FiChevronRight size={14} />
+        </Link>
+      </div>
+    );
+  }
 
   const pl = current - cost;
   const plPercent = cost > 0 ? (pl / cost) * 100 : 0;

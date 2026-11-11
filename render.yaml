@@ -1,0 +1,20 @@
+# Render Blueprint. Connect this repo as a Web Service and Render reads these
+# settings. DATABASE_URL is filled in the dashboard (the Neon pooled URL) and
+# is never stored in the repository. SESSION_SECRET is generated once on create.
+services:
+  - type: web
+    name: personal-finances
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_TIMEZONE
+        value: Europe/Lisbon
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false

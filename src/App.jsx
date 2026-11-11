@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import RequireAuth from './auth/RequireAuth';
 import Login from './pages/Login';
@@ -11,10 +11,15 @@ import Profile from './pages/Profile';
 
 function NotFound() {
   return (
-    <div className="min-vh-100 d-flex flex-column align-items-center justify-content-center" style={{ background: 'var(--surface-2)' }}>
-      <h1 className="fw-bold" style={{ fontSize: 'var(--fs-3xl)', color: 'var(--text)' }}>404</h1>
-      <p className="text-muted mb-4">Página não encontrada.</p>
-      <a href="/app" className="btn btn-primary">Voltar ao Painel</a>
+    <div className="login-page login-page--center">
+      <div className="ui-card" style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
+        <span className="ui-eyebrow">Erro 404</span>
+        <h1 className="page-title" style={{ fontSize: 'var(--fs-3xl)' }}>Página não encontrada</h1>
+        <p className="page-subtitle" style={{ marginBottom: 'var(--sp-5)' }}>
+          O endereço que abriste não existe nesta aplicação.
+        </p>
+        <Link to="/app" className="ui-btn ui-btn--primary ui-btn--block">Voltar ao painel</Link>
+      </div>
     </div>
   );
 }

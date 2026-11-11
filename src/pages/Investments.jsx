@@ -1,6 +1,10 @@
-import { FiEdit2, FiPlus, FiRefreshCw, FiSearch, FiTrash2 } from 'react-icons/fi';
+import {
+  FiEdit2, FiPieChart, FiPlus, FiRefreshCw, FiSearch, FiTarget,
+  FiTrash2, FiTrendingUp,
+} from 'react-icons/fi';
 
-import DashboardNavbar from '../components/DashboardNavbar';
+import AppShell from '../components/AppShell';
+import MetricCard from '../components/MetricCard';
 import { Button, Field, Modal } from '../components/ui';
 
 import InvestmentsSkeleton from './investments/InvestmentsSkeleton';
@@ -32,112 +36,89 @@ export default function Investments() {
 
   if (loading) {
     return (
-      <div className="ui-page">
-        <DashboardNavbar />
-        <div className="ui-page__body"><InvestmentsSkeleton /></div>
-      </div>
+      <AppShell>
+        <InvestmentsSkeleton />
+      </AppShell>
     );
   }
 
   const gain = totalPL >= 0;
 
   return (
-    <div className="ui-page">
-      <DashboardNavbar />
-
-      <main className="ui-page__body">
-        <header className="ui-page__head">
-          <div>
-            <span className="ui-eyebrow">Carteira</span>
-            <h1 className="ui-page__title">
-              {formatMoney(hasLivePrices ? totalCurrent : totalCost, symbol)}
-            </h1>
-            {investments.length > 0 && (
-              <p style={{ margin: 'var(--sp-2) 0 0', fontSize: 'var(--fs-sm)' }}>
-                {hasLivePrices ? (
-                  <>
-                    <span className={`ui-delta ui-delta--${gain ? 'gain' : 'loss'}`}>
-                      {formatSignedMoney(totalPL, symbol)} ({formatPercent(totalPLPercent, { decimals: 1, signed: true })})
-                    </span>
-                    <span style={{ color: 'var(--text-muted)' }}> · {investments.length} ativos</span>
-                  </>
-                ) : (
-                  <span style={{ color: 'var(--text-muted)' }}>
-                    {investments.length} ativos · cotações indisponíveis
+    <AppShell>
+      <header className="page-head">
+        <div>
+          <span className="ui-eyebrow">Carteira</span>
+          <h1 className="page-title">
+            {formatMoney(hasLivePrices ? totalCurrent : totalCost, symbol)}
+          </h1>
+          {investments.length > 0 && (
+            <p className="page-subtitle">
+              {hasLivePrices ? (
+                <>
+                  <span className={`ui-delta ui-delta--${gain ? 'gain' : 'loss'}`}>
+                    {formatSignedMoney(totalPL, symbol)} ({formatPercent(totalPLPercent, { decimals: 1, signed: true })})
                   </span>
-                )}
-              </p>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
-            {investments.length > 0 && (
-              <Button variant="secondary" onClick={refreshPrices} icon={<FiRefreshCw size={15} />}>
-                Atualizar
-              </Button>
-            )}
-            <Button variant="primary" onClick={openAdd} icon={<FiPlus size={15} />}>Adicionar</Button>
-          </div>
-        </header>
-
-        {priceError && <div className="ui-alert ui-alert--warning" style={{ marginBottom: 'var(--sp-4)' }}>{priceError}</div>}
-        {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
-
-        {investments.length === 0 ? (
-          <Empty onAdd={openAdd} />
-        ) : (
-          <>
-            <div className="ui-card">
-              <div className="ui-metrics" style={{ marginTop: 0, paddingTop: 0, borderTop: 0 }}>
-                <div>
-                  <span className="ui-metric__label">Investido</span>
-                  <span className="ui-metric__value">{formatMoney(totalCost, symbol)}</span>
-                  <span className="ui-metric__hint">custo de aquisição</span>
-                </div>
-                <div>
-                  <span className="ui-metric__label">Melhor ativo</span>
-                  <span className="ui-metric__value">{bestPerformer?.name || '—'}</span>
-                  <span className="ui-metric__hint">
-                    {bestPerformer?.pl != null ? formatSignedMoney(bestPerformer.pl, symbol) : 'sem cotação'}
-                  </span>
-                </div>
-                <div>
-                  <span className="ui-metric__label">Diversificação</span>
-                  <span className="ui-metric__value">
-                    {diversification.score}<span style={{ color: 'var(--text-subtle)', fontSize: 'var(--fs-sm)' }}>/100</span>
-                  </span>
-                  {/* Antes era só o número. Dizer o que falta torna-o acionável. */}
-                  <span className="ui-metric__hint" title="Heurística simples: número de ativos, tipos diferentes e concentração">
-                    {diversification.hint}
-                  </span>
-                </div>
-              </div>
-
-              {goalTarget > 0 && (
-                <div style={{ marginTop: 'var(--sp-5)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--sp-2)', fontSize: 'var(--fs-sm)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Meta: {formatMoney(goalTarget, symbol)}</span>
-                    <span style={{ fontWeight: 'var(--fw-semibold)' }}>{formatPercent(goalProgress)}</span>
-                  </div>
-                  <div className="ui-progress">
-                    <div
-                      className={`ui-progress__fill${goalProgress >= 100 ? ' ui-progress__fill--good' : ''}`}
-                      style={{ width: `${goalProgress}%` }}
-                    />
-                  </div>
-                </div>
+                  {' · '}{investments.length} ativos
+                </>
+              ) : (
+                <>{investments.length} ativos · cotações indisponíveis</>
               )}
-            </div>
+            </p>
+          )}
+        </div>
+        <div className="page-head__actions">
+          {investments.length > 0 && (
+            <Button variant="secondary" onClick={refreshPrices} icon={<FiRefreshCw size={15} />}>
+              Atualizar
+            </Button>
+          )}
+          <Button variant="primary" onClick={openAdd} icon={<FiPlus size={15} />}>Adicionar</Button>
+        </div>
+      </header>
 
-            <div className="ui-grid ui-grid--sidebar" style={{ marginTop: 'var(--sp-4)' }}>
+      {priceError && <div className="ui-alert ui-alert--warning" style={{ marginBottom: 'var(--sp-4)' }}>{priceError}</div>}
+      {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 'var(--sp-4)' }}>{error}</div>}
+
+      {investments.length === 0 ? (
+        <Empty onAdd={openAdd} />
+      ) : (
+        <>
+          <div className="stat-grid">
+            <MetricCard
+              label="Valor investido"
+              value={formatMoney(totalCost, symbol)}
+              icon={<FiTrendingUp size={16} />}
+              accent="blue"
+              hint="custo de aquisição"
+            />
+            <MetricCard
+              label="Resultado"
+              value={hasLivePrices ? formatSignedMoney(totalPL, symbol) : '—'}
+              icon={<FiTarget size={16} />}
+              accent={gain ? 'green' : 'orange'}
+              badge={hasLivePrices ? formatPercent(totalPLPercent, { decimals: 1, signed: true }) : undefined}
+              badgeTone={gain ? 'positive' : 'negative'}
+              hint={hasLivePrices ? `Melhor ativo: ${bestPerformer?.name || '—'}` : 'sem cotações em tempo real'}
+            />
+            <MetricCard
+              label="Diversificação"
+              value={`${diversification.score}/100`}
+              icon={<FiPieChart size={16} />}
+              accent="purple"
+              hint={diversification.hint}
+            />
+          </div>
+
+          <div className="ui-grid ui-grid--sidebar" style={{ marginTop: 'var(--sp-4)' }}>
               <div className="ui-card ui-card--tight">
-                <div className="ui-card__header" style={{ padding: 'var(--sp-2) 0 var(--sp-3)' }}>
+                <div className="ui-card__header asset-head" style={{ padding: 'var(--sp-2) 0 var(--sp-3)' }}>
                   <h3 className="ui-card__title">Ativos</h3>
-                  <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
-                    <div style={{ position: 'relative' }}>
-                      <FiSearch size={13} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-subtle)' }} />
+                  <div className="asset-tools">
+                    <div className="asset-tools__search">
+                      <FiSearch size={13} aria-hidden="true" />
                       <input
                         className="ui-field__control"
-                        style={{ padding: '0.35rem 0.5rem 0.35rem 1.65rem', width: 140, fontSize: 'var(--fs-xs)' }}
                         placeholder="Filtrar…"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -146,7 +127,6 @@ export default function Investments() {
                     </div>
                     <select
                       className="ui-field__control"
-                      style={{ width: 'auto', padding: '0.35rem 0.5rem', fontSize: 'var(--fs-xs)' }}
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
                       aria-label="Ordenar ativos"
@@ -161,8 +141,8 @@ export default function Investments() {
                     <p className="ui-empty__text">Nenhum ativo corresponde a “{searchTerm}”.</p>
                   </div>
                 ) : (
-                  <div style={{ overflowX: 'auto' }}>
-                    <table className="ui-table">
+                  <div>
+                    <table className="ui-table ui-table--stack">
                       <thead>
                         <tr>
                           <th>Ativo</th>
@@ -177,7 +157,7 @@ export default function Investments() {
                       <tbody>
                         {sorted.map((inv) => (
                           <tr key={inv.id}>
-                            <td>
+                            <td data-label="Ativo">
                               <span className="ui-chip">
                                 <span className="ui-chip__dot" style={{ background: TYPE_COLORS[inv.type] || 'var(--text-muted)' }} />
                                 <span>
@@ -188,24 +168,24 @@ export default function Investments() {
                                 </span>
                               </span>
                             </td>
-                            <td className="num muted">{inv.amount}</td>
-                            <td className="num muted">{formatMoney(inv.buyPrice, symbol)}</td>
-                            <td className="num">{inv.currentPrice ? formatMoney(inv.currentPrice, symbol) : <span className="muted">—</span>}</td>
-                            <td className="num">
+                            <td className="num muted" data-label="Unid.">{inv.amount}</td>
+                            <td className="num muted" data-label="Compra">{formatMoney(inv.buyPrice, symbol)}</td>
+                            <td className="num" data-label="Atual">{inv.currentPrice ? formatMoney(inv.currentPrice, symbol) : <span className="muted">—</span>}</td>
+                            <td className="num" data-label="Dia">
                               {inv.dailyChange != null ? (
                                 <span className={`ui-delta ui-delta--${inv.dailyChange >= 0 ? 'gain' : 'loss'}`}>
                                   {formatPercent(inv.dailyChange, { decimals: 2, signed: true })}
                                 </span>
                               ) : <span className="muted">—</span>}
                             </td>
-                            <td className="num">
+                            <td className="num" data-label="P&L">
                               {inv.pl != null ? (
                                 <span className={`ui-delta ui-delta--${inv.pl >= 0 ? 'gain' : 'loss'}`}>
                                   {formatSignedMoney(inv.pl, symbol)}
                                 </span>
                               ) : <span className="muted">—</span>}
                             </td>
-                            <td className="num">
+                            <td className="num" data-label="">
                               <div className="ui-rowactions">
                                 <button type="button" className="ui-iconbtn" onClick={() => openEdit(inv)} aria-label={`Editar ${inv.name}`}><FiEdit2 size={14} /></button>
                                 <button type="button" className="ui-iconbtn ui-iconbtn--danger" onClick={() => handleDelete(inv.id)} aria-label={`Apagar ${inv.name}`}><FiTrash2 size={14} /></button>
@@ -236,6 +216,20 @@ export default function Investments() {
                     onChange={(e) => handleGoalChange(e.target.value)}
                     placeholder="Ex: 25000"
                   />
+                  {goalTarget > 0 && (
+                    <div style={{ marginTop: 'var(--sp-4)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--sp-2)', fontSize: 'var(--fs-sm)' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Progresso</span>
+                        <span style={{ fontWeight: 'var(--fw-semibold)' }}>{formatPercent(goalProgress)}</span>
+                      </div>
+                      <div className="ui-progress">
+                        <div
+                          className={`ui-progress__fill${goalProgress >= 100 ? ' ui-progress__fill--good' : ''}`}
+                          style={{ width: `${Math.min(goalProgress, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -306,7 +300,6 @@ export default function Investments() {
             </form>
           </Modal>
         )}
-      </main>
-    </div>
+    </AppShell>
   );
 }

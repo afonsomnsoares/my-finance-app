@@ -23,7 +23,7 @@ export default function RecentTransactions({ transactions, symbol }) {
       </div>
 
       <div className="ui-card ui-card--tight">
-        <table className="ui-table">
+        <table className="ui-table ui-table--stack">
           <thead>
             <tr>
               <th>Data</th>
@@ -35,12 +35,12 @@ export default function RecentTransactions({ transactions, symbol }) {
           <tbody>
             {transactions.map((tx) => (
               <tr key={tx.id}>
-                <td className="muted" style={{ whiteSpace: 'nowrap' }}>{formatDate(tx.date, 'short')}</td>
-                <td>
+                <td className="muted" data-label="Data" style={{ whiteSpace: 'nowrap' }}>{formatDate(tx.date, 'short')}</td>
+                <td data-label="Categoria">
                   <span className="ui-chip">{tx.category}</span>
                 </td>
-                <td className="muted">{tx.description || '—'}</td>
-                <td className="num" style={{ fontWeight: 'var(--fw-semibold)' }}>
+                <td className="muted" data-label="Descrição">{tx.description || '—'}</td>
+                <td className="num" data-label="Valor" style={{ fontWeight: 'var(--fw-semibold)' }}>
                   −{formatMoney(tx.amount, symbol)}
                 </td>
               </tr>

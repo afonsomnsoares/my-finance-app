@@ -1,15 +1,20 @@
 const { Pool } = require('pg');
-const env = require('./env');
 
-/*
- * One pool for the whole process: Prisma queries and the session store share
- * it, so the app opens a single set of connections instead of two.
- */
-const pool = new Pool({
-  connectionString: env.DATABASE_URL,
-  // Raw queries (the session store, session revocation) must land in the
-  // same schema Prisma uses. DB_SCHEMA is validated as a bare identifier.
-  ...(env.DB_SCHEMA ? { options: `-c search_path=${env.DB_SCHEMA}` } : {}),
-});
+function connectionString() {
+  // Privilege checks and SET search_path need a session. PgBouncer transaction
+  // mode does not keep one, so this pool uses the direct URL.
+  const url = new URL(process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL);
+  url.searchParams.delete('channel_binding');
+  return url.toString();
+}
+
+const pool = new Pool({ connectionString: connectionString() });
+
+const schema = process.env.DB_SCHEMA;
+if (schema && /^[A-Za-z_][A-Za-z0-9_]*$/.test(schema)) {
+  pool.on('connect', (client) => {
+    client.query(`SET search_path TO "${schema}"`);
+  });
+}
 
 module.exports = pool;

@@ -1,52 +1,36 @@
-const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require('@prisma/adapter-pg');
+const { PrismaClient, Prisma } = require('@prisma/client');
 
-const env = require('./env');
-const pool = require('./pool');
-
-// Shares the process-wide pool with the session store (see lib/pool.js).
-// `schema` is only set by the integration tests, which run in their own.
-const adapter = new PrismaPg(pool, env.DB_SCHEMA ? { schema: env.DB_SCHEMA } : undefined);
-
-const basePrisma = new PrismaClient({ adapter });
-
-// Money fields are stored as Postgres NUMERIC (via Prisma's Decimal scalar)
-// for exact arithmetic at rest — see migration `money_as_decimal`. Prisma
-// returns those fields as Decimal objects, which the rest of the app
-// (JSON responses, sums in server.js, the whole frontend) expects to be
-// plain JS numbers. This extension converts them at the query boundary so
-// every other file can keep treating amounts as numbers, same as before.
-function toNumber(value) {
-  return value === null || value === undefined ? value : Number(value);
+/*
+ * Application queries use the pooled DATABASE_URL. Migrations use
+ * DATABASE_URL_UNPOOLED through Prisma's directUrl. The integration suite
+ * points this client at a throwaway schema by setting DB_SCHEMA.
+ */
+function connectionString() {
+  const url = new URL(process.env.DATABASE_URL);
+  if (process.env.DB_SCHEMA) url.searchParams.set('schema', process.env.DB_SCHEMA);
+  // channel_binding is a libpq option Node's TLS stack does not implement.
+  url.searchParams.delete('channel_binding');
+  if (url.hostname.includes('-pooler')) url.searchParams.set('pgbouncer', 'true');
+  return url.toString();
 }
 
-const decimalField = (fieldName) => ({
-  needs: { [fieldName]: true },
-  compute(row) {
-    return toNumber(row[fieldName]);
-  },
+const prisma = new PrismaClient({
+  datasources: { db: { url: connectionString() } },
 });
 
-const prisma = basePrisma.$extends({
-  name: 'decimalToNumber',
-  result: {
-    user: {
-      monthlyIncome: decimalField('monthlyIncome'),
-      monthlyExpenses: decimalField('monthlyExpenses'),
-      fixedExpenses: decimalField('fixedExpenses'),
-      savingsTarget: decimalField('savingsTarget'),
-    },
-    categoryBudget: {
-      monthlyLimit: decimalField('monthlyLimit'),
-    },
-    transaction: {
-      amount: decimalField('amount'),
-    },
-    investment: {
-      amount: decimalField('amount'),
-      buyPrice: decimalField('buyPrice'),
-    },
-  },
-});
+/*
+ * Prisma returns money columns as Decimal objects. Callers, and the JSON
+ * responses, want ordinary numbers (see lib/money.js).
+ */
+function plain(value) {
+  if (value == null || typeof value !== 'object') return value;
+  if (value instanceof Prisma.Decimal) return value.toNumber();
+  if (value instanceof Date || Buffer.isBuffer(value)) return value;
+  if (Array.isArray(value)) return value.map(plain);
+  const out = {};
+  for (const [key, nested] of Object.entries(value)) out[key] = plain(nested);
+  return out;
+}
 
 module.exports = prisma;
+module.exports.plain = plain;

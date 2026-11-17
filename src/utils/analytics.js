@@ -1,10 +1,16 @@
 import { toLocalDateKey } from './format';
+import { addMoney, roundMoney, sumAmounts, toCents, fromCents } from './money';
 
 export function groupByCategory(transactions) {
-  return transactions.reduce((acc, t) => {
-    acc[t.category] = (acc[t.category] || 0) + t.amount;
-    return acc;
-  }, {});
+  const cents = {};
+  for (const t of transactions) {
+    cents[t.category] = (cents[t.category] || 0) + toCents(t.amount);
+  }
+  const totals = {};
+  for (const [category, totalCents] of Object.entries(cents)) {
+    totals[category] = fromCents(totalCents);
+  }
+  return totals;
 }
 
 export function isThisMonth(dateStr) {
@@ -44,7 +50,7 @@ export function getDailyData(transactions, from, to) {
     days[key] = {
       date: key,
       label: cur.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' }),
-      total: 0,
+      totalCents: 0,
     };
     cur.setDate(cur.getDate() + 1);
   }
@@ -54,11 +60,14 @@ export function getDailyData(transactions, from, to) {
     d.setHours(0, 0, 0, 0);
     const key = toLocalDateKey(d);
     if (days[key]) {
-      days[key].total += t.amount;
+      days[key].totalCents += toCents(t.amount);
     }
   });
 
-  return Object.values(days);
+  return Object.values(days).map(({ totalCents, ...rest }) => ({
+    ...rest,
+    total: fromCents(totalCents),
+  }));
 }
 
 export function getMonthlyComparison(transactions, monthCount = 6) {
@@ -72,12 +81,12 @@ export function getMonthlyComparison(transactions, monthCount = 6) {
     const year = d.getFullYear();
     const label = d.toLocaleDateString('pt-PT', { month: 'short', year: '2-digit' });
 
-    const total = transactions
-      .filter((t) => {
+    const total = sumAmounts(
+      transactions.filter((t) => {
         const td = new Date(t.date);
         return td.getMonth() === month && td.getFullYear() === year;
       })
-      .reduce((sum, t) => sum + t.amount, 0);
+    );
 
     result.push({ label, total, isCurrent: i === 0 });
   }
@@ -138,7 +147,7 @@ export function getMonthlyHistory(transactions, months = 12) {
       fullLabel: d.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' }),
       year: d.getFullYear(),
       month: d.getMonth(),
-      total: 0,
+      totalCents: 0,
       count: 0,
       isCurrent: i === 0,
     });
@@ -150,13 +159,15 @@ export function getMonthlyHistory(transactions, months = 12) {
     const d = new Date(t.date);
     const bucket = index.get(`${d.getFullYear()}-${d.getMonth()}`);
     if (bucket) {
-      bucket.total += t.amount;
+      bucket.totalCents += toCents(t.amount);
       bucket.count += 1;
     }
   });
 
-  buckets.forEach((b) => { b.total = Math.round(b.total * 100) / 100; });
-  return buckets;
+  return buckets.map(({ totalCents, ...rest }) => ({
+    ...rest,
+    total: fromCents(totalCents),
+  }));
 }
 
 /*
@@ -181,8 +192,8 @@ export function getCategoryTrends(transactions, window = 3) {
   transactions.forEach((t) => {
     const d = new Date(t.date);
     if (d >= startOfThisMonth) return;
-    if (d >= recentFrom) recent[t.category] = (recent[t.category] || 0) + t.amount;
-    else if (d >= previousFrom) previous[t.category] = (previous[t.category] || 0) + t.amount;
+    if (d >= recentFrom) recent[t.category] = addMoney(recent[t.category] || 0, t.amount);
+    else if (d >= previousFrom) previous[t.category] = addMoney(previous[t.category] || 0, t.amount);
   });
 
   const categories = new Set([...Object.keys(recent), ...Object.keys(previous)]);
@@ -196,9 +207,9 @@ export function getCategoryTrends(transactions, window = 3) {
       const percent = before > 0 ? (delta / before) * 100 : null;
       return {
         category,
-        current: Math.round(now_ * 100) / 100,
-        previous: Math.round(before * 100) / 100,
-        delta: Math.round(delta * 100) / 100,
+        current: roundMoney(now_),
+        previous: roundMoney(before),
+        delta: roundMoney(delta),
         percent: percent === null ? null : Math.round(percent),
         isNew: before === 0 && now_ > 0,
       };
@@ -214,5 +225,5 @@ export function getCategoryTrends(transactions, window = 3) {
 export function getMonthlyAverage(history) {
   const withData = history.filter((m) => m.count > 0);
   if (withData.length === 0) return 0;
-  return Math.round((withData.reduce((s, m) => s + m.total, 0) / withData.length) * 100) / 100;
+  return roundMoney(sumAmounts(withData, 'total') / withData.length);
 }

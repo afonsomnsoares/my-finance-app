@@ -23,6 +23,7 @@ import MarketTicker from './dashboard/MarketTicker';
 
 import { useDashboardData } from './dashboard/useDashboardData';
 import { formatMonthYear, formatMoney, formatPercent } from '../utils/format';
+import { addMoney } from '../utils/money';
 import './App.css';
 
 /*
@@ -36,7 +37,7 @@ export default function AppPage() {
   const [monthOffset, setMonthOffset] = useState(0);
 
   const {
-    user, error, loading, fetchData,
+    user, truncated, error, loading, fetchData,
     symbol, monthTransactions, spentThisMonth, lastMonthTransactions,
     monthlyBudget, balance, spendingTrend, avgDaily,
     monthDays, hasTransactions, recentTransactions, reference, isCurrentMonth,
@@ -55,7 +56,10 @@ export default function AppPage() {
     let sum = 0;
     return monthDays
       .filter((day) => !day.isFuture)
-      .map((day) => { sum += day.total; return sum; });
+      .map((day) => {
+        sum = addMoney(sum, day.total);
+        return sum;
+      });
   }, [monthDays]);
 
   // O saldo ao longo do mês: rendimento menos o acumulado de despesas.
@@ -88,6 +92,11 @@ export default function AppPage() {
 
   return (
     <AppShell>
+      {truncated && (
+        <div className="ui-alert ui-alert--danger" role="status" style={{ marginBottom: 'var(--sp-4)' }}>
+          Só estão carregadas as 10 000 despesas mais recentes. Totais do painel podem estar incompletos.
+        </div>
+      )}
       <header className="page-head">
         <div>
           <span className="ui-eyebrow">Finanças pessoais</span>

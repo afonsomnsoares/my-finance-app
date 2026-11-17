@@ -36,6 +36,12 @@ describe('getMonthlyHistory', () => {
     expect(h.reduce((s, m) => s + m.total, 0)).toBe(100);
   });
 
+  test('soma totais em cêntimos sem resíduo float', () => {
+    const h = getMonthlyHistory([tx(0, 0.1), tx(0, 0.2)], 6);
+    expect(h[5].total).toBe(0.3);
+  });
+
+
   /*
    * A regressão que motivou esta função: o gráfico de 6 meses era alimentado
    * com transações que a API já tinha filtrado para um único mês, por isso

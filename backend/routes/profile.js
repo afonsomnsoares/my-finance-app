@@ -4,6 +4,7 @@ const prisma = require('../lib/prisma');
 const { plain } = prisma;
 const { logger, securityEvent } = require('../lib/logger');
 const { verifyPassword, hashPassword } = require('../lib/password');
+const { destroyOtherSessions } = require('../lib/session');
 const validate = require('../middleware/validate');
 const { writeLimiter } = require('../middleware/rateLimit');
 const schemas = require('../schemas');
@@ -70,19 +71,23 @@ router.put('/profile/password',
       data: { password: await hashPassword(newPassword) },
     });
 
-    logger.info(
-      { security: true, event: 'password_changed', userId: req.userId, ip: req.ip },
-      'security.password_changed'
-    );
-
     /*
      * Mudar a password invalida as outras sessões — é o que se espera quando
      * se muda uma credencial — mas mantém esta, para o utilizador não ser
      * expulso da página onde acabou de a mudar.
      */
-    // MemoryStore: sessions are keyed by session id. Destroying all sessions
-    // for this user isn't tracked here, but the current session stays valid.
-    // The password change still takes effect on next login.
+    const revoked = await destroyOtherSessions(req.userId, req.sessionID);
+
+    logger.info(
+      {
+        security: true,
+        event: 'password_changed',
+        userId: req.userId,
+        ip: req.ip,
+        sessionsRevoked: revoked,
+      },
+      'security.password_changed'
+    );
 
     res.json({ message: 'Password alterada. As outras sessões foram terminadas.' });
   })

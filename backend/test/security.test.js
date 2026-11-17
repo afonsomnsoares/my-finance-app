@@ -12,7 +12,7 @@ const assert = require('node:assert/strict');
 process.env.SESSION_SECRET ??= 'test-secret-that-is-long-enough-to-pass-validation';
 process.env.DATABASE_URL ??= 'postgresql://test:test@localhost:5432/test';
 
-const { hashPassword, verifyPassword } = require('../lib/password');
+const { hashPassword, verifyPassword, passwordPolicyError } = require('../lib/password');
 const schemas = require('../schemas');
 
 /* ───────── Password hashing ───────── */
@@ -169,6 +169,24 @@ test('a partial profile update leaves untouched fields undefined', () => {
 
 test('an invalid currency is rejected', () => {
   assert.throws(() => schemas.profileUpdate.parse({ currency: 'XXX' }));
+});
+
+test('new passwords need letters and numbers', () => {
+  assert.throws(() => schemas.passwordChange.parse({
+    currentPassword: 'old-password-here',
+    newPassword: 'only letters here',
+  }));
+  const ok = schemas.passwordChange.parse({
+    currentPassword: 'old-password-here',
+    newPassword: 'letters and 12 nums',
+  });
+  assert.equal(ok.newPassword, 'letters and 12 nums');
+});
+
+test('CLI password policy matches the API rule', () => {
+  assert.match(passwordPolicyError('short'), /12/);
+  assert.match(passwordPolicyError('only letters here'), /letras e números/);
+  assert.equal(passwordPolicyError('letters and 12 nums'), null);
 });
 
 /* ───────── Coerência entre backend e frontend ───────── */

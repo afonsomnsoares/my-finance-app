@@ -15,6 +15,7 @@ import { Button, Modal } from '../components/ui';
 
 import { api, buildTransactionQuery, getDateRangeFromPreset, filterTransactions } from '../utils/api';
 import { formatMoney, getCurrencySymbol } from '../utils/format';
+import { sumAmounts } from '../utils/money';
 import './App.css';
 
 const PAGE_SIZE = 25;
@@ -23,6 +24,7 @@ export default function Expenses() {
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [user, setUser] = useState(null);
+  const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -74,6 +76,7 @@ export default function Expenses() {
       ]);
       setUser(userRes.data);
       setTransactions(txRes.data);
+      setTruncated(String(txRes.headers?.['x-truncated'] || '') === '1');
       setCategories(catRes.data);
       setError('');
     } catch {
@@ -148,7 +151,7 @@ export default function Expenses() {
   // numa página que já não existe.
   useEffect(() => { setPage(1); }, [preset, from, to, category, search, sortField, sortDirection]);
 
-  const total = visible.reduce((s, tx) => s + tx.amount, 0);
+  const total = sumAmounts(visible);
   const activeDays = new Set(visible.map((t) => new Date(t.date).toDateString())).size;
   const biggest = visible.reduce((max, tx) => (!max || tx.amount > max.amount ? tx : max), null);
 
@@ -185,6 +188,11 @@ export default function Expenses() {
 
   return (
     <AppShell>
+      {truncated && (
+        <div className="ui-alert ui-alert--danger" role="status" style={{ marginBottom: 'var(--sp-4)' }}>
+          Só estão carregadas as 10 000 despesas mais recentes. Totais do período podem estar incompletos.
+        </div>
+      )}
       <header className="page-head">
         <div>
           <span className="ui-eyebrow">Transações</span>

@@ -48,6 +48,18 @@ const marketLimiter = rateLimit({
   handler: onLimit('rate_limit_market'),
 });
 
+const assistantLimiter = rateLimit({
+  ...common,
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  message: 'Too many questions for Grok. Please wait a few minutes.',
+  // The route is behind the session, so the bucket is the user id. The
+  // library otherwise rejects any custom generator that does not fold IPv6.
+  keyGenerator: (req) => String(req.userId),
+  validate: { keyGeneratorIpFallback: false },
+  handler: onLimit('rate_limit_assistant'),
+});
+
 const writeLimiter = rateLimit({
   ...common,
   windowMs: 60 * 1000,
@@ -56,4 +68,4 @@ const writeLimiter = rateLimit({
   handler: onLimit('rate_limit_write'),
 });
 
-module.exports = { apiLimiter, loginLimiter, marketLimiter, writeLimiter };
+module.exports = { apiLimiter, loginLimiter, marketLimiter, writeLimiter, assistantLimiter };

@@ -39,26 +39,32 @@ export default function Reports() {
   const [exporting, setExporting] = useState('');
   const [exportError, setExportError] = useState('');
 
-  const fetchReport = useCallback(async () => {
+  const fetchReport = useCallback(async (signal) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ type: reportType, year: String(year) });
       if (reportType === 'month') params.set('month', String(month));
 
       const [userRes, reportRes] = await Promise.all([
-        api.get('/api/me'),
-        api.get(`/api/reports?${params}`),
+        api.get('/api/me', { signal }),
+        api.get(`/api/reports?${params}`, { signal }),
       ]);
+      if (signal?.aborted) return;
       setUser(userRes.data);
       setReport(reportRes.data);
-    } catch {
+    } catch (err) {
+      if (err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError' || signal?.aborted) return;
       setReport(null);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [reportType, year, month]);
 
-  useEffect(() => { fetchReport(); }, [fetchReport]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchReport(controller.signal);
+    return () => controller.abort();
+  }, [fetchReport]);
 
   const symbol = getCurrencySymbol(user?.currency || 'EUR');
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
@@ -116,6 +122,11 @@ export default function Reports() {
 
   return (
     <AppShell>
+      {report?.truncated && (
+        <div className="ui-alert ui-alert--danger" role="status" style={{ marginBottom: 'var(--sp-4)' }}>
+          Este período tem demasiadas despesas para carregar de uma vez. Totais e exportações podem estar incompletos.
+        </div>
+      )}
       <header className="page-head">
         <div>
           <span className="ui-eyebrow">Relatório</span>

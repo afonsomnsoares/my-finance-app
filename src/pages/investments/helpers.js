@@ -1,3 +1,5 @@
+import { sumNumbers } from '../../utils/money';
+
 /*
  * Pontuação de diversificação, 0–100.
  *
@@ -17,7 +19,7 @@ export function calcDiversification(enriched) {
     return { score: 0, reasons: [], hint: 'Adiciona o primeiro ativo.' };
   }
 
-  const totalValue = enriched.reduce((s, i) => s + i.costValue, 0);
+  const totalValue = sumNumbers(enriched.map((i) => i.costValue));
   if (totalValue <= 0) {
     return { score: 0, reasons: [], hint: 'Os ativos não têm valor de compra registado.' };
   }

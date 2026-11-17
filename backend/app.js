@@ -22,6 +22,7 @@ const budgetRoutes = require('./routes/budgets');
 const reportRoutes = require('./routes/reports');
 const investmentRoutes = require('./routes/investments');
 const marketRoutes = require('./routes/market');
+const assistantRoutes = require('./routes/assistant');
 
 const app = express();
 
@@ -38,9 +39,17 @@ app.disable('x-powered-by');
 /* ───────── Security & infrastructure middleware ───────── */
 
 app.use(helmet({
-  // The API and the built frontend are served from the same origin in
-  // production, so a strict default-src is safe here.
-  contentSecurityPolicy: env.isProd ? undefined : false,
+  // Same-origin SPA in production, plus Google Fonts loaded from index.html.
+  contentSecurityPolicy: env.isProd
+    ? {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        'style-src': ["'self'", 'https://fonts.googleapis.com'],
+        'font-src': ["'self'", 'https://fonts.gstatic.com'],
+        'img-src': ["'self'", 'data:'],
+      },
+    }
+    : false,
   crossOriginEmbedderPolicy: false,
 }));
 
@@ -66,7 +75,17 @@ app.use(cors({
     // Same-origin requests and curl send no Origin header at all.
     if (!origin) return callback(null, true);
     if (env.corsOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('Origin not allowed by CORS.'));
+    // The dev server also serves the page, so the browser's own origin is
+    // this process. A missing entry here would reject login from that page.
+    try {
+      const url = new URL(origin);
+      const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+      if (local && String(url.port || (url.protocol === 'https:' ? 443 : 80)) === String(env.PORT)) {
+        return callback(null, true);
+      }
+    } catch { /* not a URL */ }
+    // Reject without throwing — an Error here becomes a 500 for the browser.
+    return callback(null, false);
   },
   credentials: true,
 }));
@@ -104,6 +123,7 @@ app.use('/api/budgets', budgetRoutes);
 app.use('/api', reportRoutes.router);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api', assistantRoutes);
 
 /* ───────── Static frontend ───────── */
 

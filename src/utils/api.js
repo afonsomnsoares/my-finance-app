@@ -90,7 +90,11 @@ export function loadFromCache(url) {
 }
 
 export function clearCache() {
-  Object.keys(localStorage).filter(k => k.startsWith(CACHE_PREFIX)).forEach(k => localStorage.removeItem(k));
+  // Drop every pf_* key so logout / 401 never leaves financial prefs behind
+  // on a shared browser (cache entries and investment goal alike).
+  Object.keys(localStorage)
+    .filter((key) => key.startsWith('pf_'))
+    .forEach((key) => localStorage.removeItem(key));
 }
 
 export async function fetchWithCache(url) {

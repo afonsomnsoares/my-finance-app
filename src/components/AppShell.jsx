@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FiBarChart2, FiChevronDown, FiChevronRight, FiDownload, FiFileText,
-  FiGrid, FiLogOut, FiMenu, FiPlus, FiRepeat, FiSearch, FiSettings,
-  FiTrendingUp,
+  FiGrid, FiLogOut, FiMenu, FiMessageCircle, FiPlus, FiRepeat, FiSearch,
+  FiSettings, FiTrendingUp,
 } from 'react-icons/fi';
 import { useAuth } from '../auth/AuthContext';
+import GrokPanel from './GrokPanel';
 
 const PRIMARY = [
   { to: '/app', label: 'Painel', Icon: FiGrid },
@@ -52,6 +53,7 @@ export default function AppShell({ children }) {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [txOpen, setTxOpen] = useState(true);
+  const [grokOpen, setGrokOpen] = useState(false);
   const [term, setTerm] = useState('');
 
   useEffect(() => {
@@ -201,6 +203,17 @@ export default function AppShell({ children }) {
               />
             </form>
 
+            <button
+              type="button"
+              className="topbar__action"
+              onClick={() => setGrokOpen(true)}
+              aria-expanded={grokOpen}
+              aria-controls="grok-title"
+            >
+              <FiMessageCircle size={15} aria-hidden="true" />
+              <span>Grok</span>
+            </button>
+
             <Link to="/app/reports" className="topbar__action">
               <FiDownload size={15} aria-hidden="true" />
               <span>Exportar</span>
@@ -222,6 +235,7 @@ export default function AppShell({ children }) {
           </header>
 
           <main className="shell-content">{children}</main>
+          <GrokPanel open={grokOpen} onClose={() => setGrokOpen(false)} />
         </div>
       </div>
     </div>

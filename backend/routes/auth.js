@@ -2,6 +2,7 @@ const express = require('express');
 
 const prisma = require('../lib/prisma');
 const { plain } = prisma;
+const env = require('../lib/env');
 const { logger, securityEvent } = require('../lib/logger');
 const { verifyPassword } = require('../lib/password');
 const validate = require('../middleware/validate');
@@ -24,10 +25,15 @@ router.post('/login', loginLimiter, validate({ body: schemas.login }), ah(async 
    * wrong password, account with no password set. Distinguishing them tells
    * an attacker which usernames exist.
    *
-   * The password is still verified against a dummy hash when the account does
-   * not exist, so the response time does not reveal the answer either.
+   * The password is still verified against a full-length dummy hash when the
+   * account does not exist, so the response time matches a real scrypt verify.
    */
-  const stored = user?.password ?? 'scrypt$16384$8$1$00$00';
+  // Same layout as hashPassword(): 16-byte salt + 64-byte key (hex).
+  const DUMMY_HASH = 'scrypt$16384$8$1$'
+    + '00000000000000000000000000000000$'
+    + '0000000000000000000000000000000000000000000000000000000000000000'
+    + '0000000000000000000000000000000000000000000000000000000000000000';
+  const stored = user?.password ?? DUMMY_HASH;
   const ok = await verifyPassword(password, stored);
 
   if (!user || !user.password || !ok) {
@@ -57,7 +63,12 @@ router.post('/logout', (req, res) => {
       logger.error({ err }, 'logout_failed');
       return res.status(500).json({ error: 'Could not log out.' });
     }
-    res.clearCookie('pf.sid', { path: '/' });
+    res.clearCookie('pf.sid', {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: env.isProd,
+    });
     if (userId) {
       logger.info({ security: true, event: 'logout', userId, ip: req.ip }, 'security.logout');
     }

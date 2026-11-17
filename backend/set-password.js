@@ -10,25 +10,25 @@
 
 const prisma = require('./lib/prisma');
 const pool = require('./lib/pool');
-const { hashPassword } = require('./lib/password');
+const { hashPassword, passwordPolicyError } = require('./lib/password');
+const { destroyAllSessionsForUser } = require('./lib/session');
 const { ask, close } = require('./lib/prompt');
-
-const MIN_LENGTH = 12;
 
 async function main() {
   const user = await prisma.user.findFirst({ orderBy: { id: 'asc' } });
   if (!user) {
-    console.error('Nenhum utilizador encontrado. Corre primeiro: node backend/seed.js');
+    console.error('Nenhum utilizador encontrado. Corre primeiro: npm run create-user');
     process.exitCode = 1;
     return;
   }
 
   console.log(`\nA definir a password de: ${user.username} (${user.email})`);
-  console.log(`Mínimo ${MIN_LENGTH} caracteres. Não aparece no ecrã enquanto escreves.\n`);
+  console.log('Mínimo 12 caracteres, com letras e números. Não aparece no ecrã enquanto escreves.\n');
 
   const password = await ask('Nova password: ', { silent: true });
-  if (password.length < MIN_LENGTH) {
-    console.error(`\nA password tem de ter pelo menos ${MIN_LENGTH} caracteres. Nada foi alterado.`);
+  const policyError = passwordPolicyError(password);
+  if (policyError) {
+    console.error(`\n${policyError} Nada foi alterado.`);
     process.exitCode = 1;
     return;
   }
@@ -45,7 +45,12 @@ async function main() {
     data: { password: await hashPassword(password) },
   });
 
-  console.log('\nPassword definida. Já podes entrar em http://localhost:3000');
+  // CLI reset must revoke every browser session — there is no "current" cookie
+  // to keep, and a stolen pf.sid would otherwise keep working for 30 days.
+  const revoked = await destroyAllSessionsForUser(user.id);
+
+  console.log(`\nPassword definida. ${revoked} sessão(ões) terminada(s).`);
+  console.log('Já podes entrar em http://localhost:3000');
 }
 
 main()

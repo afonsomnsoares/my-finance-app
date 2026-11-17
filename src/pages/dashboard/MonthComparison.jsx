@@ -3,6 +3,7 @@ import {
 } from 'recharts';
 import ChartTooltip from './ChartTooltip';
 import { formatCompactMoney, formatMoney } from '../../utils/format';
+import { roundMoney, sumAmounts, sumNumbers } from '../../utils/money';
 
 const WEEKS = [
   { label: '1–7', from: 1, to: 7 },
@@ -27,9 +28,12 @@ export default function MonthComparison({ monthTransactions, lastMonthTransactio
 
   const byWeek = (transactions) =>
     WEEKS.map(({ from, to }) =>
-      transactions
-        .filter((t) => { const d = new Date(t.date).getDate(); return d >= from && d <= to; })
-        .reduce((s, t) => s + t.amount, 0)
+      sumAmounts(
+        transactions.filter((t) => {
+          const d = new Date(t.date).getDate();
+          return d >= from && d <= to;
+        })
+      )
     );
 
   const thisMonth = byWeek(monthTransactions);
@@ -37,13 +41,13 @@ export default function MonthComparison({ monthTransactions, lastMonthTransactio
 
   const data = WEEKS.map((w, i) => ({
     name: w.label,
-    [thisLabel]: Math.round(thisMonth[i] * 100) / 100,
-    [prevLabel]: Math.round(prevMonth[i] * 100) / 100,
+    [thisLabel]: roundMoney(thisMonth[i]),
+    [prevLabel]: roundMoney(prevMonth[i]),
   }));
 
-  const thisTotal = thisMonth.reduce((s, v) => s + v, 0);
-  const prevTotal = prevMonth.reduce((s, v) => s + v, 0);
-  const diff = thisTotal - prevTotal;
+  const thisTotal = sumNumbers(thisMonth);
+  const prevTotal = sumNumbers(prevMonth);
+  const diff = roundMoney(thisTotal - prevTotal);
 
   return (
     <div className="ui-card">

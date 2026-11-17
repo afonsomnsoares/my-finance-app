@@ -89,7 +89,7 @@ A app é de utilizador único e **toda a API exige sessão**. O que está montad
 | Área | Implementação |
 |---|---|
 | **Autenticação** | Password com `scrypt` (Node core). Sem registo público — a password define-se por CLI no servidor. |
-| **Sessões** | `express-session` com store em Postgres. O cookie é `httpOnly`, `SameSite=Lax`, e `Secure` em produção. Carrega apenas um id opaco, por isso o logout revoga-o mesmo do lado do servidor. Dura **30 dias**, renovados a cada utilização (`rolling`) — quem usa a app regularmente nunca tem de voltar a entrar. Ajusta em `SESSION_DAYS` ([lib/session.js](backend/lib/session.js)). |
+| **Sessões** | `express-session` + `connect-pg-simple` na tabela Postgres `user_sessions`. O cookie é `httpOnly`, `SameSite=Lax`, e `Secure` em produção. Carrega apenas um id opaco — logout e mudança de password revogam sessões no servidor. Dura **30 dias**, renovados a cada utilização (`rolling`). Ajusta em `SESSION_DAYS` ([lib/session.js](backend/lib/session.js)). |
 | **Isolamento de dados** | `requireAuth` está montado em todo o prefixo `/api`, logo uma rota nova nasce protegida. Todas as queries passam por `scopeToUser()`, que injeta o `userId` da sessão — nunca do pedido. |
 | **Rate limiting** | 4 níveis: login (10 falhas/15min), escritas (60/min), mercado (30/min) e um teto global (600/15min). |
 | **Validação** | Zod em todos os `body`, `query` e `params`. Valores são normalizados, limitados e truncados antes de chegarem a um handler. |

@@ -12,8 +12,22 @@ const { USER_FIELDS } = require('./profile');
 const ah = require('./asyncHandler');
 
 const router = express.Router();
-async function userTransactions(req) {
-  return plain(await prisma.transaction.findMany({ where: scopeToUser(req) }));
+
+const REPORT_TX_CAP = 10_000;
+
+async function userTransactionsInRange(req, from, to) {
+  return plain(await prisma.transaction.findMany({
+    where: scopeToUser(req, { date: { gte: from, lte: to } }),
+    orderBy: { date: 'desc' },
+    take: REPORT_TX_CAP,
+  }));
+}
+
+function splitByRange(rows, from, to) {
+  return rows.filter((t) => {
+    const d = new Date(t.date);
+    return d >= from && d <= to;
+  });
 }
 
 /* ───────── Reports ───────── */
@@ -22,17 +36,17 @@ router.get('/reports', validate({ query: schemas.reportQuery }), ah(async (req, 
   const { from, to, label } = resolvePeriod(req.validatedQuery);
   const prev = previousPeriod({ type: req.validatedQuery.type, from });
 
-  const allTx = await userTransactions(req);
+  // One query covering previous + current period instead of loading the whole ledger.
+  const windowFrom = prev.from < from ? prev.from : from;
+  const windowTo = prev.to > to ? prev.to : to;
+  const windowTx = await userTransactionsInRange(req, windowFrom, windowTo);
+  if (windowTx.length === REPORT_TX_CAP) {
+    res.setHeader('X-Truncated', '1');
+  }
 
-  const transactions = allTx.filter((t) => {
-    const d = new Date(t.date);
-    return d >= from && d <= to;
-  }).sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const previousTransactions = allTx.filter((t) => {
-    const d = new Date(t.date);
-    return d >= prev.from && d <= prev.to;
-  });
+  const transactions = splitByRange(windowTx, from, to)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const previousTransactions = splitByRange(windowTx, prev.from, prev.to);
 
   const totals = totalsByCategory(transactions);
   const counts = {};
@@ -46,6 +60,7 @@ router.get('/reports', validate({ query: schemas.reportQuery }), ah(async (req, 
     transactionCount: transactions.length,
     previousTotal: sumAmounts(previousTransactions),
     previousByCategory,
+    truncated: windowTx.length === REPORT_TX_CAP,
     byCategory: Object.keys(totals)
       .map((category) => ({
         category, total: totals[category], count: counts[category],
@@ -66,15 +81,9 @@ router.get('/insights', ah(async (req, res) => {
   const month = monthRange(now.getFullYear(), now.getMonth());
   const prevMonth = monthRange(now.getFullYear(), now.getMonth() - 1);
 
-  const allTx = await userTransactions(req);
-  const monthTx = allTx.filter((t) => {
-    const d = new Date(t.date);
-    return d >= month.from && d <= month.to;
-  });
-  const prevMonthTx = allTx.filter((t) => {
-    const d = new Date(t.date);
-    return d >= prevMonth.from && d <= prevMonth.to;
-  });
+  const windowTx = await userTransactionsInRange(req, prevMonth.from, month.to);
+  const monthTx = splitByRange(windowTx, month.from, month.to);
+  const prevMonthTx = splitByRange(windowTx, prevMonth.from, prevMonth.to);
 
   const spentThisMonth = sumAmounts(monthTx);
   const spentPrevMonth = sumAmounts(prevMonthTx);
@@ -124,11 +133,7 @@ router.get('/reports/export', validate({ query: schemas.exportQuery }), ah(async
   const { format } = req.validatedQuery;
   const { from, to, label } = resolvePeriod(req.validatedQuery);
 
-  const allTx = await userTransactions(req);
-  const transactions = allTx.filter((t) => {
-    const d = new Date(t.date);
-    return d >= from && d <= to;
-  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const transactions = await userTransactionsInRange(req, from, to);
 
   logger.info({ userId: req.userId, format, count: transactions.length }, 'report_exported');
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getCurrencySymbol } from '../../utils/format';
 import { api } from '../../utils/api';
+import { roundMoney, sumMoneyProducts } from '../../utils/money';
 import { TYPES } from './constants';
 import { calcDiversification } from './helpers';
 
@@ -103,24 +104,30 @@ export function useInvestments() {
 
   const symbol = getCurrencySymbol(user?.currency || 'EUR');
 
-  const totalCost = useMemo(() => investments.reduce((s, i) => s + i.amount * i.buyPrice, 0), [investments]);
-  const totalCurrent = useMemo(() => investments.reduce((s, i) => {
-    const q = prices[i.name];
-    return s + (q?.price ? i.amount * q.price : 0);
-  }, 0), [investments, prices]);
-  const totalPL = totalCurrent - totalCost;
+  const totalCost = useMemo(() => sumMoneyProducts(investments, 'amount', 'buyPrice'), [investments]);
+  const totalCurrent = useMemo(
+    () => sumMoneyProducts(
+      investments
+        .filter((i) => prices[i.name]?.price)
+        .map((i) => ({ amount: i.amount, price: prices[i.name].price })),
+      'amount',
+      'price'
+    ),
+    [investments, prices]
+  );
+  const totalPL = roundMoney(totalCurrent - totalCost);
   const totalPLPercent = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
   const hasLivePrices = investments.some(i => prices[i.name]);
   const goalProgress = goalTarget > 0 ? Math.min((totalCurrent / goalTarget) * 100, 100) : 0;
 
   const enriched = useMemo(() => {
-    return investments.map(inv => {
+    return investments.map((inv) => {
       const quote = prices[inv.name];
       const currentPrice = quote?.price;
-      const currentValue = currentPrice ? inv.amount * currentPrice : null;
-      const costValue = inv.amount * inv.buyPrice;
-      const pl = currentValue ? currentValue - costValue : null;
-      const plPercent = pl && costValue > 0 ? (pl / costValue) * 100 : null;
+      const currentValue = currentPrice != null ? roundMoney(inv.amount * currentPrice) : null;
+      const costValue = roundMoney(inv.amount * inv.buyPrice);
+      const pl = currentValue != null ? roundMoney(currentValue - costValue) : null;
+      const plPercent = pl != null && costValue > 0 ? (pl / costValue) * 100 : null;
       const allocation = totalCost > 0 ? (costValue / totalCost) * 100 : 0;
       const dailyChange = quote?.changePercent;
       return { ...inv, currentPrice, currentValue, costValue, pl, plPercent, allocation, dailyChange };

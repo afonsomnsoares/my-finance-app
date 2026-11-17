@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
 import { api } from '../../utils/api';
 import { formatMoney, formatPercent, formatSignedMoney } from '../../utils/format';
+import { sumMoneyProducts } from '../../utils/money';
 
 /*
  * Resumo da carteira. Mostra o valor atual e o ganho/perda — e mais nada,
@@ -34,8 +35,14 @@ export default function InvestmentSummary({ symbol }) {
   const { cost, current, hasPrices } = useMemo(() => {
     const list = investments || [];
     return {
-      cost: list.reduce((s, i) => s + i.amount * i.buyPrice, 0),
-      current: list.reduce((s, i) => s + (prices[i.name]?.price ? i.amount * prices[i.name].price : 0), 0),
+      cost: sumMoneyProducts(list, 'amount', 'buyPrice'),
+      current: sumMoneyProducts(
+        list
+          .filter((i) => prices[i.name]?.price)
+          .map((i) => ({ amount: i.amount, price: prices[i.name].price })),
+        'amount',
+        'price'
+      ),
       hasPrices: list.some((i) => prices[i.name]?.price),
     };
   }, [investments, prices]);

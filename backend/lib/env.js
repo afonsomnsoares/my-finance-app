@@ -50,6 +50,13 @@ const schema = z.object({
   APP_TIMEZONE: z.string().default('Europe/Lisbon').refine((tz) => {
     try { new Intl.DateTimeFormat('en', { timeZone: tz }); return true; } catch { return false; }
   }, 'APP_TIMEZONE must be an IANA zone name, e.g. Europe/Lisbon.'),
+  // Optional on purpose: the rest of the app must boot without an xAI account.
+  // The assistant route answers 503 until this is set.
+  XAI_API_KEY: z.preprocess(
+    (value) => (value === '' ? undefined : value),
+    z.string().min(1).optional()
+  ),
+  GROK_MODEL: z.string().regex(/^[a-zA-Z0-9._-]{1,64}$/).default('grok-4.7'),
 });
 
 const parsed = schema.safeParse(process.env);

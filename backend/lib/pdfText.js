@@ -39,6 +39,15 @@ async function extractPdfItems(buffer, password) {
     throw error;
   }
 
+  // Cap pages so one crafted PDF cannot burn unbounded CPU on the server.
+  const MAX_PAGES = 50;
+  if (doc.numPages > MAX_PAGES) {
+    const wrapped = new Error('pdf_too_large');
+    wrapped.code = 'pdf_too_large';
+    await doc.destroy();
+    throw wrapped;
+  }
+
   try {
     const items = [];
     for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {

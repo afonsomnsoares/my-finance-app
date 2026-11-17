@@ -12,10 +12,9 @@
  */
 const prisma = require('./lib/prisma');
 const pool = require('./lib/pool');
-const { hashPassword } = require('./lib/password');
+const { hashPassword, passwordPolicyError } = require('./lib/password');
 const { ask, askUntilValid, confirm, close } = require('./lib/prompt');
 
-const MIN_PASSWORD = 12;
 
 const required = (label) => (v) => (v ? null : `${label} é obrigatório.`);
 
@@ -67,11 +66,11 @@ async function main() {
   const username = await askUntilValid('Utilizador (para iniciar sessão): ', validUsername);
   const phoneNumber = await ask('Telefone (opcional): ');
 
-  console.log(`\nPassword — mínimo ${MIN_PASSWORD} caracteres, não aparece enquanto escreves.\n`);
+  console.log('\nPassword — mínimo 12 caracteres, com letras e números. Não aparece enquanto escreves.\n');
 
   const password = await askUntilValid(
     'Password: ',
-    (v) => (v.length >= MIN_PASSWORD ? null : `Pelo menos ${MIN_PASSWORD} caracteres.`),
+    (v) => passwordPolicyError(v),
     { silent: true }
   );
 
@@ -99,8 +98,7 @@ async function main() {
     });
   });
 
-  // As sessões antigas apontavam para um utilizador que já não existe.
-  // Sessions live in memory, so there is no user_sessions table to clear.
+  // Drop any leftover sessions that still pointed at the replaced account.
   await pool.query('DELETE FROM user_sessions').catch((err) => {
     if (err.code !== '42P01') throw err;
   });

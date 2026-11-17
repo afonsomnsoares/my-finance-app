@@ -50,4 +50,21 @@ async function verifyPassword(plain, stored) {
   return crypto.timingSafeEqual(derived, expected);
 }
 
-module.exports = { hashPassword, verifyPassword };
+/*
+ * Shared rule for API + CLI. Kept here so set-password / create-user cannot
+ * drift from the Zod policy on PUT /api/profile/password.
+ */
+function passwordPolicyError(plain) {
+  if (typeof plain !== 'string' || plain.length < 12) {
+    return 'A password tem de ter pelo menos 12 caracteres.';
+  }
+  if (plain.length > 200) {
+    return 'A password é demasiado longa.';
+  }
+  if (!/[A-Za-z]/.test(plain) || !/\d/.test(plain)) {
+    return 'A password precisa de letras e números.';
+  }
+  return null;
+}
+
+module.exports = { hashPassword, verifyPassword, passwordPolicyError };

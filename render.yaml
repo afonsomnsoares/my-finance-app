@@ -6,6 +6,8 @@ services:
     name: personal-finances
     runtime: node
     plan: free
+    # migrate deploy runs on start (backend/package.json) so user_sessions
+    # and schema indexes exist before the first login.
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -18,3 +20,10 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: DATABASE_URL_UNPOOLED
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: XAI_API_KEY
+        sync: false
+

@@ -1,4 +1,5 @@
 import { formatMoney, formatPercent } from '../../utils/format';
+import { fromCents, sumAmounts, sumNumbers, toCents } from '../../utils/money';
 
 /*
  * Distribuição por categoria em barras horizontais, não em donut.
@@ -15,12 +16,15 @@ import { formatMoney, formatPercent } from '../../utils/format';
  * acima do orçamento, verde = ganho).
  */
 export default function CategoryBreakdown({ transactions, symbol, limit = 6 }) {
-  const totals = transactions.reduce((acc, t) => {
-    acc[t.category] = (acc[t.category] || 0) + t.amount;
-    return acc;
-  }, {});
+  const centsByCategory = {};
+  for (const t of transactions) {
+    centsByCategory[t.category] = (centsByCategory[t.category] || 0) + toCents(t.amount);
+  }
+  const totals = Object.fromEntries(
+    Object.entries(centsByCategory).map(([category, cents]) => [category, fromCents(cents)])
+  );
 
-  const total = Object.values(totals).reduce((s, v) => s + v, 0);
+  const total = sumAmounts(transactions);
   const rows = Object.entries(totals)
     .map(([category, value]) => ({ category, value }))
     .sort((a, b) => b.value - a.value);
@@ -39,7 +43,7 @@ export default function CategoryBreakdown({ transactions, symbol, limit = 6 }) {
     shown.push({
       key: '__resto__',
       category: `Outras ${rest.length} categorias`,
-      value: rest.reduce((s, r) => s + r.value, 0),
+      value: sumNumbers(rest.map((r) => r.value)),
       grouped: rest.length,
     });
   }

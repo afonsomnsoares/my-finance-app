@@ -1,5 +1,6 @@
 import { TYPES, TYPE_COLORS } from './constants';
 import { formatPercent } from '../../utils/format';
+import { sumNumbers } from '../../utils/money';
 
 /*
  * Alocação da carteira numa barra empilhada, não num donut.
@@ -17,7 +18,7 @@ export default function AllocationBar({ pieData }) {
   if (!pieData || pieData.length === 0) return null;
 
   const byType = pieData.filter((d) => d.value > 0);
-  const total = byType.reduce((s, d) => s + d.value, 0) || 1;
+  const total = sumNumbers(byType.map((d) => d.value)) || 1;
 
   return (
     <div className="ui-card">

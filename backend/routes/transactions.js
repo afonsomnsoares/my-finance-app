@@ -38,7 +38,17 @@ router.get('/', validate({ query: schemas.transactionQuery }), ah(async (req, re
   }
   if (category) where.category = category;
 
-  const rows = await prisma.transaction.findMany({ where, orderBy: { date: 'desc' } });
+  // Personal ledgers stay well under this; the cap stops an accidental or
+  // adversarial full-table dump from exhausting memory on one GET.
+  const TRANSACTION_CAP = 10_000;
+  const rows = await prisma.transaction.findMany({
+    where,
+    orderBy: { date: 'desc' },
+    take: TRANSACTION_CAP,
+  });
+  if (rows.length === TRANSACTION_CAP) {
+    res.setHeader('X-Truncated', '1');
+  }
   res.json(plain(rows));
 }));
 
@@ -68,6 +78,12 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
         code: 'password_incorrect',
       });
     }
+    if (error.code === 'pdf_too_large') {
+      return res.status(422).json({
+        error: 'Este PDF tem demasiadas páginas. O máximo é 50.',
+        code: 'pdf_too_large',
+      });
+    }
     return res.status(400).json({ error: 'Não foi possível ler este PDF.' });
   }
 
@@ -84,38 +100,69 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
     return res.status(422).json({ error: 'Este extrato tem demasiados movimentos para importar de uma vez.' });
   }
 
-  const dates = expenses.map((expense) => new Date(`${expense.date}T00:00:00.000Z`));
-  const existing = await prisma.transaction.findMany({
-    where: scopeToUser(req, {
-      date: { gte: new Date(Math.min(...dates)), lte: endOfLocalDay(new Date(Math.max(...dates))) },
-    }),
-    select: { date: true, amount: true, description: true },
-  });
-  const known = new Set(existing.map((row) => movementKey(row.date, Number(row.amount), row.description)));
-
-  const fresh = [];
+  // Same bounds as JSON create — PDF parsing must not bypass Zod money/text caps.
+  const validated = [];
   for (const expense of expenses) {
-    const key = movementKey(expense.date, expense.amount, expense.description);
-    if (known.has(key)) continue;
-    known.add(key);
-    fresh.push(expense);
-  }
-
-  if (fresh.length > 0) {
-    await prisma.transaction.createMany({
-      data: fresh.map((expense) => ({
-        userId: req.userId,
-        amount: expense.amount,
-        category: expense.category,
-        description: expense.description,
-        date: new Date(`${expense.date}T00:00:00.000Z`),
-      })),
+    const parsed = schemas.transactionCreate.safeParse({
+      amount: expense.amount,
+      category: expense.category,
+      description: expense.description,
+      date: `${expense.date}T00:00:00.000Z`,
+    });
+    if (!parsed.success) {
+      return res.status(422).json({
+        error: 'O extrato tem um movimento com valor ou descrição inválidos.',
+      });
+    }
+    validated.push({
+      amount: parsed.data.amount,
+      category: parsed.data.category,
+      description: parsed.data.description ?? null,
+      date: expense.date,
     });
   }
 
+  /*
+   * Advisory lock per user so two parallel imports of the same statement
+   * cannot both pass the in-memory dedupe set and insert duplicates.
+   */
+  const fresh = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${req.userId})`;
+
+    const dates = validated.map((expense) => new Date(`${expense.date}T00:00:00.000Z`));
+    const existing = await tx.transaction.findMany({
+      where: scopeToUser(req, {
+        date: { gte: new Date(Math.min(...dates)), lte: endOfLocalDay(new Date(Math.max(...dates))) },
+      }),
+      select: { date: true, amount: true, description: true },
+    });
+    const known = new Set(existing.map((row) => movementKey(row.date, Number(row.amount), row.description)));
+
+    const toCreate = [];
+    for (const expense of validated) {
+      const key = movementKey(expense.date, expense.amount, expense.description);
+      if (known.has(key)) continue;
+      known.add(key);
+      toCreate.push(expense);
+    }
+
+    if (toCreate.length > 0) {
+      await tx.transaction.createMany({
+        data: toCreate.map((expense) => ({
+          userId: req.userId,
+          amount: expense.amount,
+          category: expense.category,
+          description: expense.description,
+          date: new Date(`${expense.date}T00:00:00.000Z`),
+        })),
+      });
+    }
+    return toCreate;
+  });
+
   res.json({
     created: fresh.length,
-    skippedDuplicates: expenses.length - fresh.length,
+    skippedDuplicates: validated.length - fresh.length,
     skippedIncoming: incoming,
     expenses: fresh,
   });

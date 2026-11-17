@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getCurrencySymbol } from '../../utils/format';
 import { calcTrend } from '../../utils/analytics';
 import { api, loadFromCache } from '../../utils/api';
+import { sumAmounts } from '../../utils/money';
 import { getMonthDays } from './helpers';
 
 /**
@@ -22,6 +23,7 @@ export function useDashboardData(offset = 0) {
   const [user, setUser] = useState(() => loadFromCache('/api/me') || null);
   const [transactions, setTransactions] = useState(() => loadFromCache('/api/transactions') || []);
   const [insights, setInsights] = useState(() => loadFromCache('/api/insights') || null);
+  const [truncated, setTruncated] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -35,6 +37,7 @@ export function useDashboardData(offset = 0) {
       ]);
       setUser(userRes.data);
       setTransactions(txRes.data);
+      setTruncated(String(txRes.headers?.['x-truncated'] || '') === '1');
       setInsights(insRes?.data || null);
     } catch {
       setError('Erro ao carregar dados. Verifica se o servidor backend está a correr em http://127.0.0.1:5000.');
@@ -60,8 +63,8 @@ export function useDashboardData(offset = 0) {
     const prev = new Date(reference.getFullYear(), reference.getMonth() - 1, 1);
     return transactions.filter((t) => inMonth(t.date, prev));
   }, [transactions, reference]);
-  const spentThisMonth = useMemo(() => monthTransactions.reduce((s, t) => s + t.amount, 0), [monthTransactions]);
-  const spentLastMonth = useMemo(() => lastMonthTransactions.reduce((s, t) => s + t.amount, 0), [lastMonthTransactions]);
+  const spentThisMonth = useMemo(() => sumAmounts(monthTransactions), [monthTransactions]);
+  const spentLastMonth = useMemo(() => sumAmounts(lastMonthTransactions), [lastMonthTransactions]);
   const monthlyBudget = user?.monthlyExpenses || 0;
   const budgetUsedPercent = monthlyBudget > 0 ? Math.min(Math.round((spentThisMonth / monthlyBudget) * 100), 100) : 0;
   const balance = (user?.monthlyIncome || 0) - spentThisMonth;
@@ -83,7 +86,7 @@ export function useDashboardData(offset = 0) {
   }, [transactions]);
 
   return {
-    user, transactions, insights, error, loading, fetchData, reference, isCurrentMonth,
+    user, transactions, insights, truncated, error, loading, fetchData, reference, isCurrentMonth,
     symbol, monthTransactions, lastMonthTransactions,
     spentThisMonth, spentLastMonth, monthlyBudget, budgetUsedPercent,
     balance, spendingTrend, avgDaily, monthDays, maxDaily,

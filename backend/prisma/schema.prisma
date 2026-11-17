@@ -59,6 +59,7 @@ model Transaction {
   description String?
   date        DateTime @default(now())
 
+  @@index([userId, date])
   @@map("transactions")
 }
 

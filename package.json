@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "npm --prefix backend install && vite build",
-    "start": "node backend/server.js",
+    "start": "npm start --prefix backend",
     "start:frontend": "vite",
     "test": "vitest run",
     "test:watch": "vitest",

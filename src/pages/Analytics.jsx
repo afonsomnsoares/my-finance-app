@@ -13,6 +13,7 @@ import CategoryBreakdown from './dashboard/CategoryBreakdown';
 import { api } from '../utils/api';
 import { getMonthlyHistory, getCategoryTrends, getMonthlyAverage } from '../utils/analytics';
 import { formatMoney, getCurrencySymbol } from '../utils/format';
+import { sumAmounts } from '../utils/money';
 import './App.css';
 
 const WINDOWS = [
@@ -34,6 +35,7 @@ const WINDOWS = [
 export default function Analytics() {
   const [transactions, setTransactions] = useState([]);
   const [user, setUser] = useState(null);
+  const [truncated, setTruncated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [months, setMonths] = useState(12);
@@ -46,6 +48,7 @@ export default function Analytics() {
     ])
       .then(([txRes, userRes]) => {
         setTransactions(txRes.data);
+        setTruncated(String(txRes.headers?.['x-truncated'] || '') === '1');
         setUser(userRes.data);
       })
       .catch(() => setError('Não foi possível carregar o histórico.'))
@@ -60,7 +63,7 @@ export default function Analytics() {
   const trendWindow = months >= 12 ? 3 : 2;
   const trends = useMemo(() => getCategoryTrends(transactions, trendWindow), [transactions, trendWindow]);
 
-  const windowTotal = history.reduce((s, m) => s + m.total, 0);
+  const windowTotal = sumAmounts(history, 'total');
   const monthsWithData = history.filter((m) => m.count > 0).length;
 
   // Só os meses completos entram na distribuição: o mês em curso ainda está
@@ -93,6 +96,11 @@ export default function Analytics() {
 
   return (
     <AppShell>
+      {truncated && (
+        <div className="ui-alert ui-alert--danger" role="status" style={{ marginBottom: 'var(--sp-4)' }}>
+          Só estão carregadas as 10 000 despesas mais recentes. Tendências e médias podem estar incompletas.
+        </div>
+      )}
       <header className="page-head">
         <div>
           <span className="ui-eyebrow">Análises</span>

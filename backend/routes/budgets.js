@@ -18,6 +18,8 @@ router.get('/', ah(async (req, res) => {
   const budgets = plain(await prisma.categoryBudget.findMany({ where: scopeToUser(req) }));
   const monthTransactions = plain(await prisma.transaction.findMany({
     where: { ...scopeToUser(req), date: { gte: from, lte: to } },
+    orderBy: { date: 'desc' },
+    take: 10_000,
   }));
 
   const spentByCategory = totalsByCategory(monthTransactions);

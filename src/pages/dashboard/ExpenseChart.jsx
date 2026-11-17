@@ -3,6 +3,7 @@ import {
 } from 'recharts';
 import ChartTooltip from './ChartTooltip';
 import { formatCompactMoney, formatMoney } from '../../utils/format';
+import { roundMoney, sumNumbers } from '../../utils/money';
 
 /*
  * Evolução do gasto ao longo do mês.
@@ -14,9 +15,9 @@ import { formatCompactMoney, formatMoney } from '../../utils/format';
 export default function ExpenseChart({ monthDays, symbol }) {
   const data = monthDays
     .filter((d) => !d.isFuture)
-    .map((d) => ({ dia: d.day, valor: Math.round(d.total * 100) / 100 }));
+    .map((d) => ({ dia: d.day, valor: roundMoney(d.total) }));
 
-  const total = data.reduce((s, d) => s + d.valor, 0);
+  const total = sumNumbers(data.map((d) => d.valor));
   const peak = data.reduce((m, d) => (d.valor > (m?.valor ?? 0) ? d : m), null);
 
   return (

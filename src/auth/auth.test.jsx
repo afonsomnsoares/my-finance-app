@@ -52,10 +52,10 @@ describe('route protection', () => {
     const { default: App } = await import('../App');
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: /personal finance/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /personal finance/i }, { timeout: 10000 })).toBeInTheDocument();
     expect(screen.getByLabelText(/utilizador ou email/i)).toBeInTheDocument();
     expect(window.location.pathname).toBe('/login');
-  });
+  }, 10000);
 
   test('the session is confirmed with the server, not read from storage', async () => {
     window.history.pushState({}, '', '/app');

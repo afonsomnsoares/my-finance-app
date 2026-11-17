@@ -66,7 +66,7 @@ test('API integration', { skip: !canRun && 'DATABASE_URL not set' }, async (t) =
     await pool.end();
   });
 
-  const password = 'correct horse battery staple';
+  const password = 'correct horse battery staple 1';
   const makeUser = async (username) => prisma.user.create({
     data: {
       firstName: username, lastName: 'Test', phoneNumber: '910000000',
@@ -203,6 +203,22 @@ test('API integration', { skip: !canRun && 'DATABASE_URL not set' }, async (t) =
     assert.equal(status, 200);
     assert.match(body, /"'=HYPERLINK\(""x""\)"/);
     assert.doesNotMatch(body, /999/);
+  });
+
+  await t.test('password change keeps the current session and revokes others', async () => {
+    const deviceA = client();
+    const deviceB = client();
+    assert.equal((await deviceA.post('/api/auth/login', { username: 'alice', password })).status, 200);
+    assert.equal((await deviceB.post('/api/auth/login', { username: 'alice', password })).status, 200);
+
+    const nextPassword = 'correct horse battery staple 2';
+    const changed = await deviceA.put('/api/profile/password', {
+      currentPassword: password,
+      newPassword: nextPassword,
+    });
+    assert.equal(changed.status, 200, changed.body?.error || JSON.stringify(changed.body));
+    assert.equal((await deviceA.get('/api/me')).status, 200);
+    assert.equal((await deviceB.get('/api/me')).status, 401);
   });
 
   await t.test('logout revokes the session', async () => {

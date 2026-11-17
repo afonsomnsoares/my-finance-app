@@ -21,7 +21,7 @@ const optionalText = (max) =>
 
 /*
  * Money. Bounded on both ends: negatives silently flipped a spending total
- * into a credit, and an unbounded value overflows the NUMERIC(12,2) column.
+ * into a credit, and an unbounded value is rejected before it hits DECIMAL.
  */
 const money = z.coerce
   .number({ message: 'Must be a number.' })
@@ -98,7 +98,11 @@ const passwordChange = z.object({
   currentPassword: z.string().min(1, 'A password atual é obrigatória.').max(200),
   newPassword: z.string()
     .min(12, 'A nova password tem de ter pelo menos 12 caracteres.')
-    .max(200, 'A password é demasiado longa.'),
+    .max(200, 'A password é demasiado longa.')
+    .refine(
+      (value) => /[A-Za-z]/.test(value) && /\d/.test(value),
+      'A nova password precisa de letras e números.'
+    ),
 }).refine((o) => o.currentPassword !== o.newPassword, {
   message: 'A nova password tem de ser diferente da atual.',
   path: ['newPassword'],
@@ -210,6 +214,17 @@ const marketSearchQuery = z.object({
   q: z.string().trim().min(1, 'Query is required.').max(50),
 });
 
+const assistantChat = z.object({
+  messages: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string()
+      .transform((s) => s.replace(/[\u0000-\u001F\u007F]/g, '').trim())
+      .pipe(z.string().min(1, 'Message is empty.').max(1500, 'Message is too long.')),
+  })).min(1, 'Send a message.').max(12, 'Conversation is too long. Start a new one.'),
+}).refine((data) => data.messages.at(-1).role === 'user', {
+  message: 'The last message must be from the user.',
+});
+
 module.exports = {
   idParam,
   login, passwordChange,
@@ -219,4 +234,5 @@ module.exports = {
   investmentCreate, investmentUpdate,
   reportQuery, exportQuery,
   marketQuotesQuery, marketPricesQuery, marketSearchQuery,
+  assistantChat,
 };

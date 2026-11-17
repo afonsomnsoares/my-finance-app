@@ -83,7 +83,7 @@ export default function PasswordChange() {
               label="Nova password"
               type="password"
               autoComplete="new-password"
-              hint="Mínimo 12 caracteres"
+              hint="Mínimo 12 caracteres, com letras e números"
               value={form.newPassword}
               onChange={change('newPassword')}
               required

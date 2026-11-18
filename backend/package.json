@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx prisma migrate deploy && npx prisma generate && node server.js",
+    "start": "node start.js",
     "dev": "nodemon server.js",
     "postinstall": "prisma generate",
     "test": "node --test --test-concurrency=1 test/*.test.js",

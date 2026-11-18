@@ -6,8 +6,8 @@ services:
     name: personal-finances
     runtime: node
     plan: free
-    # migrate deploy runs on start (backend/package.json) so user_sessions
-    # and schema indexes exist before the first login.
+    # migrate deploy runs on start. If DATABASE_URL_UNPOOLED is unset, start
+    # derives the direct Neon host from the pooled DATABASE_URL.
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health

@@ -16,8 +16,6 @@ const CURRENCIES = [
   { value: 'GBP', label: 'GBP £' },
 ];
 
-// Todos os campos que o PUT /api/profile aceita. Antes a página editava
-// quatro deles, e os outros dez só eram alcançáveis pela API.
 const EMPTY = {
   firstName: '', lastName: '', email: '', username: '',
   phoneNumber: '', birthday: '',
@@ -31,7 +29,7 @@ const fromUser = (u) => ({
   email: u.email ?? '',
   username: u.username ?? '',
   phoneNumber: u.phoneNumber ?? '',
-  // <input type="date"> exige exatamente AAAA-MM-DD.
+
   birthday: u.birthday ? String(u.birthday).slice(0, 10) : '',
   monthlyIncome: u.monthlyIncome ?? '',
   monthlyExpenses: u.monthlyExpenses ?? '',

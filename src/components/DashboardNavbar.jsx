@@ -13,11 +13,6 @@ const LINKS = [
   { to: '/app/profile', label: 'Perfil', Icon: FiUser },
 ];
 
-/*
- * Era `navbar-light bg-white` numa app inteiramente escura, e os seis links
- * quebravam para três linhas no telemóvel. Passa a ser uma barra própria que
- * desliza horizontalmente em ecrãs estreitos.
- */
 export default function DashboardNavbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();

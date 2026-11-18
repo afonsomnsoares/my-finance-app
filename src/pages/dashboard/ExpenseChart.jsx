@@ -5,13 +5,6 @@ import ChartTooltip from './ChartTooltip';
 import { formatCompactMoney, formatMoney } from '../../utils/format';
 import { roundMoney, sumNumbers } from '../../utils/money';
 
-/*
- * Evolução do gasto ao longo do mês.
- *
- * Substitui o par calendário-de-30-células + gráfico de linha que mostravam
- * exatamente os mesmos dados, um por cima do outro. Ficou o gráfico: responde
- * "onde é que gastei mais" de relance, coisa que uma grelha de números não faz.
- */
 export default function ExpenseChart({ monthDays, symbol }) {
   const data = monthDays
     .filter((d) => !d.isFuture)
@@ -44,7 +37,7 @@ export default function ExpenseChart({ monthDays, symbol }) {
                 <stop offset="100%" stopColor="var(--cat-1)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            {/* Grelha recessiva: só horizontais, sem tracejado a competir. */}
+
             <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
             <XAxis
               dataKey="dia"
@@ -59,8 +52,7 @@ export default function ExpenseChart({ monthDays, symbol }) {
               axisLine={false}
               tickLine={false}
               width={48}
-              /* O formatador anterior fazia (v/1000).toFixed(0)+'k', por isso
-                 um eixo de 0 a 1000 imprimia "0k 0k 0k 1k 1k". */
+
               tickFormatter={(v) => formatCompactMoney(v, symbol)}
             />
             <Tooltip
@@ -75,8 +67,7 @@ export default function ExpenseChart({ monthDays, symbol }) {
               stroke="var(--cat-1)"
               strokeWidth={2}
               fill="url(#gradGasto)"
-              /* Um ponto só aparece quando se lá passa por cima: 30 marcas
-                 permanentes tornariam a linha ilegível. */
+
               dot={false}
               activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--surface)' }}
             />

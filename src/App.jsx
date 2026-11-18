@@ -24,11 +24,6 @@ function NotFound() {
   );
 }
 
-/*
- * Every route that renders financial data sits behind <RequireAuth>. The
- * guard only decides what to render — the API rejects unauthenticated
- * requests on its own, so a tampered-with router gains nothing.
- */
 const protectedRoutes = [
   { path: '/app', element: <AppPage /> },
   { path: '/app/analytics', element: <Analytics /> },

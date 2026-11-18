@@ -11,7 +11,7 @@ export default function Button({
   ].filter(Boolean).join(' ');
 
   const Tag = as || 'button';
-  // Um <button> sem type dentro de um <form> submete-o sem querer.
+
   const typeProp = Tag === 'button' && rest.type === undefined ? { type: 'button' } : {};
 
   return (

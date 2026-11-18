@@ -2,18 +2,6 @@ import { TYPES, TYPE_COLORS } from './constants';
 import { formatPercent } from '../../utils/format';
 import { sumNumbers } from '../../utils/money';
 
-/*
- * Alocação da carteira numa barra empilhada, não num donut.
- *
- * O donut anterior ocupava um cartão inteiro para mostrar duas fatias, e
- * obrigava a saltar entre fatia e legenda. Aqui as proporções leem-se de uma
- * vez e cada tipo é nomeado por extenso por baixo.
- *
- * Sobre a cor: quatro tons distinguíveis entre si em todos os pares não
- * existem nesta paleta — amarelo e laranja medem ΔE 4,8 para quem tem
- * deuteranopia. Por isso o quarto tipo usa um neutro, e os segmentos levam
- * um intervalo de 2px e etiqueta escrita: a cor é reforço, não o único sinal.
- */
 export default function AllocationBar({ pieData }) {
   if (!pieData || pieData.length === 0) return null;
 

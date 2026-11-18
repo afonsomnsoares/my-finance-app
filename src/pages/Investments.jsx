@@ -18,11 +18,6 @@ import './App.css';
 
 const typeLabel = (v) => TYPES.find((t) => t.value === v)?.label || v;
 
-/*
- * A página mostrava cada ativo DUAS vezes — uma tabela e, por baixo, um cartão
- * por ativo com exatamente os mesmos números — e repetia o valor da carteira
- * em duas filas de KPIs seguidas. Ficou uma tabela e um número herói.
- */
 export default function Investments() {
   const {
     investments, loading, showModal, editing, sortBy, setSortBy,

@@ -1,15 +1,3 @@
-/*
- * Opções do perfil financeiro.
- *
- * Viviam dentro do OnboardingWizard — um componente de 472 linhas que nunca
- * chegou a ser renderizado em lado nenhum. O Profile.jsx importava
- * `GOAL_OPTIONS` de lá, o que arrastava o wizard inteiro para o bundle e fazia
- * um ecrã de perfil depender de um assistente de primeira utilização.
- *
- * Os valores correspondem ao que é gravado nas colunas `financial_goal`,
- * `employment_status` e `budgeting_experience`.
- */
-
 export const GOAL_OPTIONS = [
   { value: 'save', label: 'Poupar dinheiro', desc: 'Construir uma reserva financeira sólida' },
   { value: 'track', label: 'Controlar despesas', desc: 'Saber exactamente para onde vai o dinheiro' },

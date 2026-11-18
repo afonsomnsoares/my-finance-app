@@ -14,15 +14,6 @@ function SortIcon({ active, direction }) {
   return <Icon size={11} style={{ marginLeft: 4 }} aria-hidden="true" />;
 }
 
-/*
- * Lista de despesas.
- *
- * As ações deixaram de ser dois botões com contorno — um deles vermelho — em
- * cada uma das 33 linhas. Trinta e três botões vermelhos permanentes fazem da
- * ação mais destrutiva da página a coisa mais visível dela. Agora aparecem ao
- * passar o rato (e ao navegar por teclado, via :focus-within), e o vermelho
- * só surge no hover do próprio botão de apagar.
- */
 export default function ExpenseList({
   transactions, symbol, onEdit, onDelete, sortField, sortDirection, onSort,
 }) {

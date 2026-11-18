@@ -122,19 +122,6 @@ export const CHART_COLORS = [
   '#0dcaf0',
 ];
 
-/* ═══════════════════════════════════════════════════════════════════
-   Séries temporais — o que a página de Análises passou a responder.
-   ═══════════════════════════════════════════════════════════════════ */
-
-/*
- * Total gasto em cada um dos últimos N meses.
- *
- * Substitui getMonthlyComparison, que recebia as transações JÁ filtradas pelo
- * período escolhido — com o filtro por omissão ("este mês"), um gráfico de seis
- * meses só podia ter uma barra preenchida. Esta função exige o histórico
- * completo e devolve sempre N meses, mesmo os vazios, para a linha do tempo
- * não ter buracos.
- */
 export function getMonthlyHistory(transactions, months = 12) {
   const now = new Date();
   const buckets = [];
@@ -170,16 +157,6 @@ export function getMonthlyHistory(transactions, months = 12) {
   }));
 }
 
-/*
- * Que categorias estão a crescer e quais estão a encolher.
- *
- * Compara a média mensal dos últimos `window` meses completos com a dos
- * `window` meses anteriores. Usa médias e não totais porque os dois períodos
- * podem ter um número diferente de meses com dados — comparar somas daria a
- * ilusão de crescimento só por haver mais histórico de um lado.
- *
- * O mês em curso fica de fora: está incompleto e apareceria sempre a "descer".
- */
 export function getCategoryTrends(transactions, window = 3) {
   const now = new Date();
   const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -203,7 +180,7 @@ export function getCategoryTrends(transactions, window = 3) {
       const now_ = (recent[category] || 0) / window;
       const before = (previous[category] || 0) / window;
       const delta = now_ - before;
-      // Sem base de comparação, "subiu 100%" seria enganador.
+
       const percent = before > 0 ? (delta / before) * 100 : null;
       return {
         category,
@@ -217,11 +194,6 @@ export function getCategoryTrends(transactions, window = 3) {
     .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 }
 
-/*
- * Média mensal, ignorando os meses sem qualquer registo — incluir meses vazios
- * (antes de a app começar a ser usada) puxaria a média artificialmente para
- * baixo.
- */
 export function getMonthlyAverage(history) {
   const withData = history.filter((m) => m.count > 0);
   if (withData.length === 0) return 0;

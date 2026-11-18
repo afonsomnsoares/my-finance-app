@@ -1,24 +1,10 @@
 import { useEffect, useId, useRef } from 'react';
 import { FiX } from 'react-icons/fi';
 
-/*
- * Diálogo acessível. Antes disto, os modais eram <div onClick> puros:
- * não fechavam com Escape, não anunciavam nada a um leitor de ecrã e o foco
- * continuava a passear pela página por trás.
- */
 export default function Modal({ title, onClose, maxWidth = 420, children }) {
   const contentRef = useRef(null);
   const titleId = useId();
 
-  /*
-   * `onClose` guardado numa ref para o efeito abaixo poder correr uma única
-   * vez, na montagem.
-   *
-   * Tinha-o nas dependências, e quem usa o Modal passa quase sempre uma arrow
-   * function — ou seja, uma identidade nova a cada render. O efeito voltava a
-   * correr a cada tecla e chamava focus() outra vez, roubando o foco ao campo
-   * onde se estava a escrever. Dava para escrever exatamente um caractere.
-   */
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
@@ -32,7 +18,6 @@ export default function Modal({ title, onClose, maxWidth = 420, children }) {
       }
       if (e.key !== 'Tab' || !contentRef.current) return;
 
-      // Prende o Tab dentro do diálogo.
       const focusables = contentRef.current.querySelectorAll(
         'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
       );
@@ -51,16 +36,9 @@ export default function Modal({ title, onClose, maxWidth = 420, children }) {
 
     document.addEventListener('keydown', onKeyDown);
 
-    // Impede a página de fundo de deslizar por trás do diálogo.
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    /*
-     * O primeiro campo preenchível, não o primeiro elemento focável.
-     * O botão de fechar aparece antes de {children} no DOM, por isso um
-     * querySelector que aceitasse 'button' devolvia o ✕ e era esse que ficava
-     * focado ao abrir o diálogo.
-     */
     const focusTarget = contentRef.current?.querySelector(
       'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'
     ) || contentRef.current;
@@ -71,7 +49,7 @@ export default function Modal({ title, onClose, maxWidth = 420, children }) {
       document.body.style.overflow = previousOverflow;
       if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
     };
-    // Sem dependências: monta uma vez, limpa ao desmontar.
+
   }, []);
 
   return (

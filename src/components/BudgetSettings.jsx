@@ -4,13 +4,6 @@ import { api } from '../utils/api';
 import { formatMoney, formatPercent } from '../utils/format';
 import { Button } from './ui';
 
-/*
- * Gestão dos limites mensais por categoria.
- *
- * O backend já tinha PUT /api/budgets e DELETE /api/budgets/:id, e o painel já
- * avisava quando um limite era excedido — mas não existia nenhum ecrã para o
- * definir. Ou seja, o aviso só podia disparar para quem chamasse a API à mão.
- */
 export default function BudgetSettings({ symbol }) {
   const [categories, setCategories] = useState([]);
   const [budgets, setBudgets] = useState({});

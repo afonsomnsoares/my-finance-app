@@ -10,7 +10,6 @@ const { loginLimiter } = require('../middleware/rateLimit');
 const schemas = require('../schemas');
 const ah = require('./asyncHandler');
 
-// Mounted before requireAuth: these are the only routes reachable signed out.
 const router = express.Router();
 
 router.post('/login', loginLimiter, validate({ body: schemas.login }), ah(async (req, res) => {
@@ -20,15 +19,6 @@ router.post('/login', loginLimiter, validate({ body: schemas.login }), ah(async 
     where: { OR: [{ username }, { email: username }] },
   });
 
-  /*
-   * One message and one status for every failure mode — unknown account,
-   * wrong password, account with no password set. Distinguishing them tells
-   * an attacker which usernames exist.
-   *
-   * The password is still verified against a full-length dummy hash when the
-   * account does not exist, so the response time matches a real scrypt verify.
-   */
-  // Same layout as hashPassword(): 16-byte salt + 64-byte key (hex).
   const DUMMY_HASH = 'scrypt$16384$8$1$'
     + '00000000000000000000000000000000$'
     + '0000000000000000000000000000000000000000000000000000000000000000'
@@ -41,8 +31,6 @@ router.post('/login', loginLimiter, validate({ body: schemas.login }), ah(async 
     return res.status(401).json({ error: 'Invalid credentials.' });
   }
 
-  // Prevents session fixation: the id the client held before authenticating
-  // must not be the id that now carries a logged-in session.
   req.session.regenerate((err) => {
     if (err) return res.status(500).json({ error: 'Could not start session.' });
 
@@ -76,16 +64,11 @@ router.post('/logout', (req, res) => {
   });
 });
 
-/*
- * Lets the frontend decide between the login screen and the app without
- * provoking a 401 on every page load. Returns no user data when signed out.
- */
 router.get('/session', ah(async (req, res) => {
   if (!req.session?.userId) return res.json({ authenticated: false });
 
   const user = await prisma.user.findUnique({ where: { id: req.session.userId } });
 
-  // The session outlived the account it pointed at.
   if (!user) {
     return req.session.destroy(() => res.json({ authenticated: false }));
   }

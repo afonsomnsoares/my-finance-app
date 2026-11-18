@@ -39,13 +39,6 @@ function initials(user) {
   return letters || 'PF';
 }
 
-/*
- * Moldura comum a todas as páginas autenticadas.
- *
- * Substitui a barra horizontal antiga por uma barra lateral fixa dentro de uma
- * moldura arredondada — a estrutura do design de referência. Em ecrãs estreitos
- * a barra lateral passa a painel deslizante.
- */
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
   const { pathname } = useLocation();

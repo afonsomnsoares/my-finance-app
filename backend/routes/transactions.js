@@ -38,8 +38,6 @@ router.get('/', validate({ query: schemas.transactionQuery }), ah(async (req, re
   }
   if (category) where.category = category;
 
-  // Personal ledgers stay well under this; the cap stops an accidental or
-  // adversarial full-table dump from exhausting memory on one GET.
   const TRANSACTION_CAP = 10_000;
   const rows = await prisma.transaction.findMany({
     where,
@@ -100,7 +98,6 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
     return res.status(422).json({ error: 'Este extrato tem demasiados movimentos para importar de uma vez.' });
   }
 
-  // Same bounds as JSON create — PDF parsing must not bypass Zod money/text caps.
   const validated = [];
   for (const expense of expenses) {
     const parsed = schemas.transactionCreate.safeParse({
@@ -122,10 +119,6 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
     });
   }
 
-  /*
-   * Advisory lock per user so two parallel imports of the same statement
-   * cannot both pass the in-memory dedupe set and insert duplicates.
-   */
   const fresh = await prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${req.userId})`;
 

@@ -1,6 +1,3 @@
-/* Primitivas de UI. Nenhuma cor literal — tudo sai de tokens.css. */
-
-/* ─── Card ─── */
 .ui-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -44,7 +41,6 @@
   margin: var(--sp-1) 0 0;
 }
 
-/* ─── Button ─── */
 .ui-btn {
   display: inline-flex;
   align-items: center;
@@ -114,7 +110,6 @@
 .ui-btn--lg { padding: var(--sp-3) var(--sp-5); font-size: var(--fs-base); }
 .ui-btn--block { width: 100%; }
 
-/* ─── StatTile ─── */
 .ui-stat {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -164,7 +159,6 @@
 .ui-stat__delta--down { background: var(--danger-soft); color: var(--danger); }
 .ui-stat__delta--flat { background: var(--surface-3); color: var(--text-muted); }
 
-/* ─── Field ─── */
 .ui-field {
   display: flex;
   flex-direction: column;
@@ -207,13 +201,6 @@
 
 .ui-field--invalid .ui-field__control { border-color: var(--danger); }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   Primitivas de layout e de leitura de números.
-   Tudo o que está abaixo existe para as páginas deixarem de ter
-   style={{ fontSize: '0.78rem', color: '#8b5cf6' }} espalhado por 336 sítios.
-   ═══════════════════════════════════════════════════════════════════════ */
-
-/* ─── Estrutura de página ─── */
 .ui-page {
   min-height: 100vh;
   display: flex;
@@ -251,7 +238,6 @@
   letter-spacing: -0.02em;
 }
 
-/* Rótulo pequeno acima de um título ou de um valor. */
 .ui-eyebrow {
   display: block;
   font-size: var(--fs-2xs);
@@ -262,7 +248,6 @@
   margin: 0 0 var(--sp-2);
 }
 
-/* ─── Secção ─── */
 .ui-section { margin-top: var(--sp-6); }
 
 .ui-section__head {
@@ -293,9 +278,6 @@
 
 .ui-section__link:hover { color: var(--accent); }
 
-/* ─── Número herói ───
-   Um ecrã tem um destes. É a resposta à pergunta com que o utilizador abriu
-   a página; tudo o resto é contexto para ele. */
 .ui-hero__value {
   font-size: var(--fs-3xl);
   font-weight: var(--fw-bold);
@@ -322,14 +304,12 @@
   .ui-hero__value { font-size: var(--fs-2xl); }
 }
 
-/* ─── Barra de progresso ─── */
 .ui-progress {
   height: 8px;
   background: var(--surface-3);
   border-radius: var(--r-full);
   overflow: hidden;
-  /* Marca a fronteira do orçamento. Sem isto, 100% e 140% desenham-se
-     exatamente da mesma maneira: a barra cheia. */
+
   position: relative;
 }
 
@@ -340,8 +320,6 @@
   transition: width var(--dur-slow) var(--ease);
 }
 
-/* Acima do orçamento: o excesso fica listado sobre a parte a cheio, para se
-   ver que passou a linha e não apenas que chegou ao fim. */
 .ui-progress--over .ui-progress__limit {
   position: absolute;
   top: 0;
@@ -366,9 +344,6 @@
 .ui-progress__fill--near { background: var(--warning); }
 .ui-progress__fill--good { background: var(--success); }
 
-/* ─── Linha de métricas secundárias ───
-   Separadas por filetes em vez de cada uma no seu cartão: são contexto
-   para o número herói, não quatro factos independentes. */
 .ui-metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
@@ -412,8 +387,6 @@
   .ui-metrics > *:nth-child(odd) { border-left: 0; padding-left: 0; }
 }
 
-/* ─── Delta (+/−) ───
-   O ícone e o sinal carregam o significado; a cor só reforça. */
 .ui-delta {
   display: inline-flex;
   align-items: center;
@@ -423,15 +396,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.ui-delta--up { color: var(--danger); }     /* gastar mais é mau */
+.ui-delta--up { color: var(--danger); }
 .ui-delta--down { color: var(--success); }
 .ui-delta--flat { color: var(--text-muted); }
 
-/* Nos investimentos a polaridade inverte-se: subir é bom. */
 .ui-delta--gain { color: var(--success); }
 .ui-delta--loss { color: var(--danger); }
 
-/* ─── Chip de categoria ─── */
 .ui-chip {
   display: inline-flex;
   align-items: center;
@@ -449,7 +420,6 @@
   background: var(--cat-1);
 }
 
-/* ─── Tabela ─── */
 .ui-table {
   width: 100%;
   border-collapse: collapse;
@@ -490,7 +460,6 @@
 
 .ui-table .muted { color: var(--text-muted); }
 
-/* ─── Estado vazio ─── */
 .ui-empty {
   text-align: center;
   padding: var(--sp-7) var(--sp-4);
@@ -511,7 +480,6 @@
   max-width: 36ch;
 }
 
-/* ─── Aviso ─── */
 .ui-alert {
   display: flex;
   align-items: flex-start;
@@ -530,9 +498,6 @@
 .ui-alert--danger { border-color: var(--danger); background: var(--danger-soft); }
 .ui-alert--danger .ui-alert__icon { color: var(--danger); }
 
-/* ─── Grelha ─── */
-/* align-items: start impede um cartão curto de ser esticado à altura do
-   vizinho, o que enchia metade do cartão de vazio. */
 .ui-grid { display: grid; gap: var(--sp-4); align-items: start; }
 .ui-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ui-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -552,7 +517,6 @@
   .ui-grid--sidebar { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* ─── Tooltip de gráfico ─── */
 .ui-tooltip {
   background: var(--surface-2);
   border: 1px solid var(--border-strong);
@@ -575,7 +539,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ─── Barra de aplicação ─── */
 .appbar {
   position: sticky;
   top: 0;
@@ -653,16 +616,12 @@
 
 @media (max-width: 720px) {
   .appbar__inner { gap: var(--sp-3); padding: 0 var(--sp-4); }
-  /* Em ecrãs estreitos o texto do link desaparece e fica o ícone: seis
-     etiquetas quebravam a barra para três linhas. */
+
   .appbar__link span { display: none; }
   .appbar__link { padding: var(--sp-2); }
   .appbar__logout-text { display: none; }
 }
 
-
-/* ─── Slider ───
-   O .form-range do Bootstrap traz a pista e o polegar do tema claro. */
 input[type='range'].form-range,
 .ui-range {
   -webkit-appearance: none;
@@ -708,7 +667,6 @@ input[type='range'].form-range::-moz-range-thumb,
   border: 2px solid var(--surface);
 }
 
-/* ─── Cabeçalho ordenável ─── */
 .ui-table__sort {
   background: none;
   border: 0;
@@ -724,9 +682,6 @@ input[type='range'].form-range::-moz-range-thumb,
 
 .ui-table__sort:hover { color: var(--text); }
 
-/* ─── Ações de linha ───
-   Escondidas até o rato entrar na linha; sempre visíveis para quem navega por
-   teclado (:focus-within) e em ecrãs táteis, onde não há hover. */
 .ui-rowactions {
   display: inline-flex;
   gap: var(--sp-1);
@@ -770,7 +725,6 @@ tr:focus-within .ui-rowactions { opacity: 1; }
   .ui-iconbtn { width: 44px; height: 44px; }
 }
 
-/* No telemóvel cada linha vira um bloco com o nome da coluna ao lado do valor. */
 @media (max-width: 640px) {
   .ui-table--stack { display: block; }
 
@@ -830,11 +784,9 @@ tr:focus-within .ui-rowactions { opacity: 1; }
   .ui-table--stack .ui-rowactions { opacity: 1; justify-content: flex-end; }
 }
 
-/* ─── Barra de alocação ─── */
 .alloc-bar {
   display: flex;
-  /* O intervalo entre segmentos é o que os separa quando duas cores vizinhas
-     são difíceis de distinguir. */
+
   gap: 2px;
   height: 10px;
   border-radius: var(--r-full);
@@ -870,7 +822,6 @@ tr:focus-within .ui-rowactions { opacity: 1; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ─── Sugestões (pesquisa de ticker) ─── */
 .ui-suggest {
   position: absolute;
   top: 100%;
@@ -913,7 +864,6 @@ tr:focus-within .ui-rowactions { opacity: 1; }
 .ui-suggest__item:last-child { border-bottom: 0; }
 .ui-suggest__item:hover { background: var(--surface-3); }
 
-/* ─── Barra de filtros ─── */
 .filterbar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -931,7 +881,6 @@ tr:focus-within .ui-rowactions { opacity: 1; }
 
 .filterbar .ui-field__control { padding: var(--sp-2) var(--sp-3); }
 
-/* ─── Paginação ─── */
 .ui-pager {
   display: flex;
   align-items: center;
@@ -946,7 +895,6 @@ tr:focus-within .ui-rowactions { opacity: 1; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ─── Navegação entre meses ─── */
 .monthnav {
   display: flex;
   align-items: center;
@@ -969,7 +917,6 @@ tr:focus-within .ui-rowactions { opacity: 1; }
   padding: 0 var(--sp-2);
 }
 
-/* ─── Barra de proporção nos relatórios ─── */
 .report-bar-col { width: 28%; }
 
 .report-bar {

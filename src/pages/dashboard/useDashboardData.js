@@ -5,16 +5,8 @@ import { api, loadFromCache } from '../../utils/api';
 import { sumAmounts } from '../../utils/money';
 import { getMonthDays } from './helpers';
 
-/**
- * Loads the current user, transactions and insights, and derives every
- * value the dashboard needs from them (totals, trends, daily breakdown).
- */
 export function useDashboardData(offset = 0) {
-  /*
-   * `offset` é quantos meses recuar: 0 = mês atual, 1 = mês passado.
-   * O painel só sabia olhar para o mês corrente; para ver agosto era preciso
-   * ir aos Relatórios.
-   */
+
   const reference = useMemo(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth() - offset, 1);
@@ -69,7 +61,7 @@ export function useDashboardData(offset = 0) {
   const budgetUsedPercent = monthlyBudget > 0 ? Math.min(Math.round((spentThisMonth / monthlyBudget) * 100), 100) : 0;
   const balance = (user?.monthlyIncome || 0) - spentThisMonth;
   const spendingTrend = calcTrend(spentThisMonth, spentLastMonth);
-  // Num mês passado a média é sobre o mês inteiro, não sobre o dia de hoje.
+
   const isCurrentMonth = offset === 0;
   const daysElapsed = isCurrentMonth
     ? new Date().getDate()

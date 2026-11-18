@@ -1,13 +1,5 @@
 import { formatMoney } from '../../utils/format';
 
-/*
- * Tooltip partilhado por todos os gráficos.
- *
- * O texto usa sempre tokens de texto; a identidade da série é dada por um
- * ponto colorido ao lado. Antes o valor era pintado com a cor da série
- * (`style={{ color: p.color }}`), o que punha texto amarelo ou verde-escuro
- * sobre fundo escuro e falhava contraste.
- */
 export default function ChartTooltip({ active, payload, label, symbol = '€' }) {
   if (!active || !payload?.length) return null;
 

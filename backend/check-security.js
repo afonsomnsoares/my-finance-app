@@ -1,12 +1,3 @@
-/*
- * Audits the database's security posture and exits non-zero if anything is
- * open that should not be. Safe to run in CI.
- *
- * Replaces the old check-db.js, which dumped user rows and printed half the
- * connection string to stdout.
- *
- *   npm run check:security
- */
 const pool = require('./lib/pool');
 
 const checks = [];

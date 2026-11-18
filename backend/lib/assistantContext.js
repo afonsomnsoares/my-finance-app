@@ -12,10 +12,6 @@ function inRange(rows, range) {
   });
 }
 
-/*
- * The only financial facts Grok is allowed to see. No password, email, phone
- * or raw statement text beyond the last few descriptions.
- */
 function buildSnapshot({ user, transactions, investments, now = new Date() }) {
   const month = monthRange(now.getFullYear(), now.getMonth());
   const previous = monthRange(now.getFullYear(), now.getMonth() - 1);

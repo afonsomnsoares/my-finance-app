@@ -1,15 +1,6 @@
 import { FiArrowDown, FiArrowUp, FiMinus } from 'react-icons/fi';
 import { formatMoney, formatPercent } from '../../utils/format';
 
-/*
- * O número que responde à pergunta com que se abre a app: quanto gastei este
- * mês, e isso é muito ou pouco?
- *
- * Antes, essa resposta estava repartida por três cartões iguais ("Despesas
- * este Mês", "Orçamento Mensal", "Orçamento Restante") mais um quarto nos
- * Insights. Aqui é um valor, uma barra e uma comparação — e o resto do ecrã
- * passa a ser contexto para isto, em vez de concorrência.
- */
 export default function SpendingHero({
   spent, budget, symbol, trend, balance, avgDaily, transactionCount, healthScore,
 }) {
@@ -21,12 +12,6 @@ export default function SpendingHero({
     : percent >= 85 ? 'ui-progress__fill ui-progress__fill--near'
     : 'ui-progress__fill ui-progress__fill--good';
 
-  /*
-   * Acima do orçamento a barra é dividida: a parte até ao limite fica a cheio
-   * e o excesso fica listado. Antes, 101% e 140% desenhavam-se exatamente
-   * igual — a barra cheia — e a única pista de que se tinha passado a linha
-   * era o texto por baixo.
-   */
   const overShare = over ? Math.min(((spent - budget) / spent) * 100, 60) : 0;
 
   const TrendIcon = trend.direction === 'up' ? FiArrowUp
@@ -44,7 +29,7 @@ export default function SpendingHero({
             de <strong style={{ color: 'var(--text)' }}>{formatMoney(budget, symbol)}</strong> de orçamento
           </span>
         )}
-        {/* O ícone e o sinal dizem a direção; a cor só reforça. */}
+
         <span className={`ui-delta ui-delta--${trend.direction === 'neutral' ? 'flat' : trend.direction}`}>
           <TrendIcon size={12} aria-hidden="true" />
           {formatPercent(Math.abs(trend.percent))} vs. mês anterior
@@ -77,8 +62,6 @@ export default function SpendingHero({
         </div>
       )}
 
-      {/* Métricas de apoio: filetes em vez de quatro cartões, porque são
-          contexto para o número acima e não quatro factos independentes. */}
       <div className="ui-metrics">
         <div>
           <span className="ui-metric__label">Saldo</span>
@@ -93,10 +76,7 @@ export default function SpendingHero({
           <span className="ui-metric__hint">{transactionCount} transações</span>
         </div>
         <div>
-          {/* Chamava-se "Saúde financeira", mas 8 dos 9 critérios verificam se
-              os campos do perfil estão preenchidos — só um olha para o que foi
-              gasto. O nome prometia uma avaliação das finanças que o cálculo
-              não faz. */}
+
           <span className="ui-metric__label">Perfil preenchido</span>
           <span className="ui-metric__value">{formatPercent(healthScore)}</span>
           <span className="ui-metric__hint">{healthLabel(healthScore)}</span>

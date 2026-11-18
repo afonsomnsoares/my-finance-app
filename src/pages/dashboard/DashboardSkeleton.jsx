@@ -1,6 +1,5 @@
 import SkeletonCard from '../../components/SkeletonCard';
 
-/* Espelha a estrutura real do dashboard, para o salto ao carregar ser mínimo. */
 export default function DashboardSkeleton() {
   return (
     <>

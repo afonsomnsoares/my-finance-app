@@ -1,15 +1,5 @@
 import { sumNumbers } from '../../utils/money';
 
-/*
- * Pontuação de diversificação, 0–100.
- *
- * Devolve também as razões, porque um número isolado ("65/100") não diz ao
- * utilizador o que fazer a seguir — e era exatamente isso que a página
- * mostrava antes.
- *
- * Isto é uma heurística simples, não uma medida financeira reconhecida: conta
- * quantos ativos há, quantos tipos diferentes, e se algum domina a carteira.
- */
 export function calcDiversificationScore(enriched) {
   return calcDiversification(enriched).score;
 }
@@ -47,7 +37,7 @@ export function calcDiversification(enriched) {
   return {
     score,
     reasons: criteria,
-    // A sugestão é o critério não cumprido que mais pontos vale.
+
     hint: missing.length === 0
       ? 'Carteira bem distribuída.'
       : missing.sort((a, b) => b.points - a.points)[0].label,

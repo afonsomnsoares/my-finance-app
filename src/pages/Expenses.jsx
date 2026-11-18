@@ -42,12 +42,6 @@ export default function Expenses() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  /*
-   * A barra superior da moldura navega para /app/expenses?q=… e o botão
-   * "Nova transação" para ?new=1. Estes dois efeitos transformam esses
-   * parâmetros no estado local da página e limpam o URL a seguir, para que um
-   * refresh não reabra o modal.
-   */
   useEffect(() => {
     const q = searchParams.get('q');
     if (q === null) return;
@@ -95,11 +89,6 @@ export default function Expenses() {
     [preset, from, to]
   );
 
-  /*
-   * O servidor já filtrou por data e categoria. Aqui só se aplica a pesquisa
-   * por texto, que é local e instantânea — antes voltava-se a filtrar por
-   * data e categoria no cliente, repetindo trabalho já feito.
-   */
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
     const list = preset === 'custom'
@@ -107,10 +96,6 @@ export default function Expenses() {
       : transactions;
     if (!term) return list;
 
-    /*
-     * A pesquisa olhava só para a descrição, por isso escrever "renda" ou
-     * "650" não encontrava nada. Passa a cobrir também a categoria e o valor.
-     */
     return list.filter((tx) =>
       (tx.description || '').toLowerCase().includes(term)
       || tx.category.toLowerCase().includes(term)
@@ -134,12 +119,6 @@ export default function Expenses() {
     return list;
   }, [visible, sortField, sortDirection]);
 
-  /*
-   * A tabela desenhava todas as linhas. Com 33 registos não se nota; com dois
-   * anos de histórico são centenas de linhas montadas de uma vez e uma página
-   * que o browser tem dificuldade em desenhar. Os totais acima continuam a ser
-   * calculados sobre o conjunto inteiro — só a tabela é que pagina.
-   */
   const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
   const pageRows = useMemo(
@@ -147,8 +126,6 @@ export default function Expenses() {
     [sorted, currentPage]
   );
 
-  // Mudar de filtro ou de ordenação volta à primeira página, senão ficava-se
-  // numa página que já não existe.
   useEffect(() => { setPage(1); }, [preset, from, to, category, search, sortField, sortDirection]);
 
   const total = sumAmounts(visible);
@@ -168,8 +145,7 @@ export default function Expenses() {
       if (editing) await api.put(`/api/transactions/${editing.id}`, formData);
       else await api.post('/api/transactions', formData);
       closeModal();
-      // Refetch: uma despesa nova pode cair fora do filtro ativo, e inseri-la
-      // à cabeça da lista mostrava-a onde ela não pertence.
+
       fetchData();
     } catch {
       setError(editing ? 'Não foi possível atualizar a despesa.' : 'Não foi possível criar a despesa.');

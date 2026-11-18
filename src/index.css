@@ -3,12 +3,11 @@
 @import './styles/shell.css';
 @import './components/ui/ui.css';
 
-/* ─── Base ─── */
 html { background: var(--bg); }
 
 body {
   margin: 0;
-  /* viewport-fit=cover leva o fundo até à borda; este recuo tira o conteúdo do entalhe. */
+
   padding:
     env(safe-area-inset-top)
     env(safe-area-inset-right)
@@ -43,30 +42,23 @@ a:hover { color: var(--accent); }
 
 hr { border-color: var(--border); opacity: 1; }
 
-/* Valores monetários alinham sempre pela coluna. */
 .tabular { font-variant-numeric: tabular-nums; }
 
-/* ─── Acessibilidade ─── */
-
-/* O contorno de foco existia a zero. Sem isto, navegar por teclado é às cegas. */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--r-xs);
 }
 
-/* O Bootstrap põe o seu próprio anel; deixamos o nosso mandar. */
 .btn:focus-visible,
 .form-control:focus-visible,
 .form-select:focus-visible {
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
-/* Alvos de toque com tamanho mínimo utilizável em telemóvel. */
 button,
 [role='button'] { min-height: 32px; }
 
-/* Só para leitores de ecrã. */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -79,8 +71,6 @@ button,
   border: 0;
 }
 
-/* A app tem 5 animações de entrada e um ticker em loop permanente.
-   Quem pediu menos movimento ao sistema operativo deixa de as apanhar. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -92,7 +82,6 @@ button,
   }
 }
 
-/* ─── Barras de deslocamento ─── */
 * {
   scrollbar-color: var(--border-strong) transparent;
   scrollbar-width: thin;

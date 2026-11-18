@@ -5,11 +5,6 @@ import { roundMoney, sumMoneyProducts } from '../../utils/money';
 import { TYPES } from './constants';
 import { calcDiversification } from './helpers';
 
-/**
- * Owns every piece of state, data fetching and derived value for the
- * Investments page: the portfolio itself, live prices, ticker search,
- * sorting/filtering, and the add/edit modal.
- */
 export function useInvestments() {
   const [investments, setInvestments] = useState([]);
   const [user, setUser] = useState(null);
@@ -78,7 +73,7 @@ export function useInvestments() {
     };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [showModal]);
 
   useEffect(() => {
@@ -185,8 +180,6 @@ export function useInvestments() {
     setShowModal(true);
   };
 
-  // useCallback por higiene: o Modal já não depende da identidade desta
-  // função, mas uma identidade estável evita re-renders desnecessários.
   const closeModal = useCallback(() => { setShowModal(false); resetForm(); }, []);
 
   const handleSubmit = async (e) => {
@@ -232,7 +225,7 @@ export function useInvestments() {
       if (quote?.price) {
         setForm(prev => ({ ...prev, name: item.symbol, type: item.type, buyPrice: String(quote.price) }));
       }
-    } catch { /* optional prefill fails silently */ }
+    } catch {}
   };
 
   const handleGoalChange = (val) => {

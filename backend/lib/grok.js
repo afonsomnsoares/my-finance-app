@@ -16,11 +16,6 @@ function configured(apiKey = env.XAI_API_KEY) {
   return Boolean(apiKey);
 }
 
-/*
- * One chat completion against the xAI API. The key never leaves this process.
- * Upstream status codes are not forwarded: a 401 from xAI would look like a
- * dead session to the browser and log the user out.
- */
 async function complete({
   system,
   messages,

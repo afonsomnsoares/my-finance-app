@@ -26,8 +26,7 @@ async function getQuote(symbol) {
       currency: result.currency || 'USD',
     };
   } catch (error) {
-    // Upstream failures are logged here and never surfaced to the client,
-    // which would otherwise learn about our provider and its error strings.
+
     logger.warn({ symbol, err: error.message }, 'yahoo_quote_failed');
     return null;
   }

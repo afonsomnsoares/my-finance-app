@@ -1,10 +1,3 @@
-/*
- * Prisma's schema requires DATABASE_URL_UNPOOLED at migrate time. Render only
- * has the pooled DATABASE_URL. Neon's direct host is the pooled host without
- * "-pooler". channel_binding is a libpq option Node's TLS stack does not
- * implement, so it is stripped before either client connects.
- */
-
 function cleanConnectionString(value, { direct = false } = {}) {
   const url = new URL(value);
   url.searchParams.delete('channel_binding');

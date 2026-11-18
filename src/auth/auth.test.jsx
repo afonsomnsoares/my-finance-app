@@ -2,11 +2,6 @@ import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-/*
- * The api module is mocked at the transport level only: `api.get`/`api.post`
- * are fakes, but the real cache helpers and formatters stay, so the pages
- * under test behave as they do in the app.
- */
 const mockGet = vi.fn();
 const mockPost = vi.fn();
 
@@ -20,11 +15,6 @@ vi.mock('../utils/api', async (importOriginal) => {
 
 const loggedOut = { data: { authenticated: false } };
 
-/*
- * Once login succeeds the app navigates to the dashboard, which immediately
- * fetches its own data. Routing the mock by URL keeps those requests from
- * returning a session payload where the dashboard expects a list.
- */
 function routeByUrl(sessionResponse) {
   return (url) => {
     if (url === '/api/auth/session') return Promise.resolve(sessionResponse);
@@ -110,7 +100,7 @@ describe('login form', () => {
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('Credenciais inválidas.');
-    // Nothing that hints at whether the account exists.
+
     expect(alert).not.toHaveTextContent(/utilizador|conta|existe/i);
   });
 

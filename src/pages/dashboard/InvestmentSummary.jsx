@@ -5,10 +5,6 @@ import { api } from '../../utils/api';
 import { formatMoney, formatPercent, formatSignedMoney } from '../../utils/format';
 import { sumMoneyProducts } from '../../utils/money';
 
-/*
- * Resumo da carteira. Mostra o valor atual e o ganho/perda — e mais nada,
- * porque a página de Investimentos existe para o detalhe.
- */
 export default function InvestmentSummary({ symbol }) {
   const [investments, setInvestments] = useState(null);
   const [prices, setPrices] = useState({});

@@ -5,10 +5,6 @@ import { api } from '../utils/api';
 import { formatDate, formatMoney } from '../utils/format';
 import { Button, Field, Modal } from './ui';
 
-/*
- * One PDF in, expenses out. The server reads the Santander movement list,
- * decides the category from the description, and skips money coming in.
- */
 export default function StatementImport({ symbol, onImported }) {
   const inputRef = useRef(null);
   const fileRef = useRef(null);

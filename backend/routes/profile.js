@@ -11,7 +11,7 @@ const schemas = require('../schemas');
 const ah = require('./asyncHandler');
 
 const router = express.Router();
-// `password` is excluded everywhere a user is returned.
+
 const USER_FIELDS = [
   'id', 'firstName', 'lastName', 'birthday', 'phoneNumber', 'email', 'username',
   'onboardingCompleted', 'monthlyIncome', 'currency', 'financialGoal',
@@ -31,14 +31,7 @@ router.get('/me', ah(async (req, res) => {
 }));
 
 router.put('/profile', writeLimiter, validate({ body: schemas.profileUpdate }), ah(async (req, res) => {
-  /*
-   * Only fields the client actually sent are written.
-   *
-   * The previous version destructured every field and wrote them all, so a
-   * request carrying three fields silently blanked phoneNumber and nulled
-   * birthday. Zod leaves absent fields `undefined`; dropping them here means
-   * "not sent" and "set to null" stop being the same thing.
-   */
+
   const data = Object.fromEntries(
     Object.entries(req.body).filter(([, value]) => value !== undefined)
   );
@@ -71,11 +64,6 @@ router.put('/profile/password',
       data: { password: await hashPassword(newPassword) },
     });
 
-    /*
-     * Mudar a password invalida as outras sessões — é o que se espera quando
-     * se muda uma credencial — mas mantém esta, para o utilizador não ser
-     * expulso da página onde acabou de a mudar.
-     */
     const revoked = await destroyOtherSessions(req.userId, req.sessionID);
 
     logger.info(

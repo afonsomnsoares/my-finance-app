@@ -1,8 +1,7 @@
 const { Pool } = require('pg');
 
 function connectionString() {
-  // Privilege checks and SET search_path need a session. PgBouncer transaction
-  // mode does not keep one, so this pool uses the direct URL.
+
   const url = new URL(process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL);
   url.searchParams.delete('channel_binding');
   return url.toString();

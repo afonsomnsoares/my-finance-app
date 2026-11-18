@@ -13,11 +13,6 @@ function loadPdfjs() {
   return pdfjsPromise;
 }
 
-/*
- * Text items keep their position. A Santander statement is a table, and the
- * columns only stay columns while x/y survive; joining the page into one
- * string glues the balance onto the amount.
- */
 async function extractPdfItems(buffer, password) {
   const pdfjs = await loadPdfjs();
   let doc;
@@ -39,7 +34,6 @@ async function extractPdfItems(buffer, password) {
     throw error;
   }
 
-  // Cap pages so one crafted PDF cannot burn unbounded CPU on the server.
   const MAX_PAGES = 50;
   if (doc.numPages > MAX_PAGES) {
     const wrapped = new Error('pdf_too_large');
@@ -53,8 +47,7 @@ async function extractPdfItems(buffer, password) {
     for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
       const page = await doc.getPage(pageNumber);
       const content = await page.getTextContent();
-      // PDF y grows upward and resets every page. Shift each page below the
-      // previous one so a movement on page 2 is not read as part of page 1.
+
       const pageShift = (doc.numPages - pageNumber) * 100000;
       for (const item of content.items) {
         if (!item.str || !String(item.str).trim()) continue;

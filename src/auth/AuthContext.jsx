@@ -3,13 +3,6 @@ import { api, clearCache, setUnauthenticatedHandler } from '../utils/api';
 
 const AuthContext = createContext(null);
 
-/*
- * Holds the one piece of state the whole app branches on: is there a session.
- *
- * The session itself lives in an httpOnly cookie the browser will not let us
- * read, which is the point — so "am I logged in" is answered by asking the
- * server once at startup, not by inspecting storage.
- */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
@@ -19,7 +12,7 @@ export function AuthProvider({ children }) {
       const { data } = await api.get('/api/auth/session');
       setUser(data.authenticated ? data.user : null);
     } catch {
-      // A network failure is not a logout; it just means we cannot confirm.
+
       setUser(null);
     } finally {
       setChecking(false);
@@ -28,11 +21,6 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { check(); }, [check]);
 
-  /*
-   * A 401 from any request anywhere in the app lands here, so an expired
-   * session drops the UI back to the login screen instead of leaving a page
-   * full of empty widgets and failed requests.
-   */
   useEffect(() => {
     setUnauthenticatedHandler(() => setUser(null));
     return () => setUnauthenticatedHandler(null);
@@ -40,7 +28,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (username, password) => {
     const { data } = await api.post('/api/auth/login', { username, password });
-    // Anything cached under the previous session must not bleed into this one.
+
     clearCache();
     setUser(data);
     return data;
@@ -50,7 +38,7 @@ export function AuthProvider({ children }) {
     try {
       await api.post('/api/auth/logout');
     } finally {
-      // Clear locally even if the request failed — the user asked to be out.
+
       clearCache();
       setUser(null);
     }

@@ -1,12 +1,3 @@
-/*
- * Cartões de destaque do topo de cada página.
- *
- * Cada um responde a uma pergunta com um número grande, um ícone com cor
- * semântica e uma micro-visualização — a estrutura dos três cartões do design
- * de referência. As micro-visualizações são SVG/CSS puros para não trazer mais
- * um gráfico só para desenhar 12 pontos.
- */
-
 export default function MetricCard({
   icon, label, value, badge, badgeTone = 'positive', hint, accent = 'blue', children,
 }) {
@@ -34,8 +25,7 @@ export function Sparkline({ values = [], color = 'var(--accent)' }) {
   const data = values.length > 1 ? values : [0, 0];
   const min = Math.min(...data);
   const max = Math.max(...data);
-  // Normalizar entre o mínimo e o máximo (e não a partir de zero) permite
-  // desenhar séries que descem abaixo do ponto de partida, como o saldo.
+
   const range = max - min || 1;
   const step = (width - pad * 2) / (data.length - 1);
   const points = data

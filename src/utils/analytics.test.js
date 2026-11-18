@@ -1,7 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { getMonthlyHistory, getCategoryTrends, getMonthlyAverage } from './analytics';
 
-// Uma transação em `monthsBack` meses atrás, no dia 10 (longe das fronteiras).
 const tx = (monthsBack, amount, category = 'Alimentação') => {
   const now = new Date();
   return {
@@ -20,7 +19,7 @@ describe('getMonthlyHistory', () => {
 
   test('coloca cada transação no seu mês', () => {
     const h = getMonthlyHistory([tx(0, 100), tx(1, 200), tx(2, 300)], 6);
-    expect(h[5].total).toBe(100); // mês atual, último do array
+    expect(h[5].total).toBe(100);
     expect(h[4].total).toBe(200);
     expect(h[3].total).toBe(300);
   });
@@ -41,13 +40,6 @@ describe('getMonthlyHistory', () => {
     expect(h[5].total).toBe(0.3);
   });
 
-
-  /*
-   * A regressão que motivou esta função: o gráfico de 6 meses era alimentado
-   * com transações que a API já tinha filtrado para um único mês, por isso
-   * cinco das seis barras estavam sempre vazias. O teste garante que, dado o
-   * histórico completo, os meses anteriores aparecem preenchidos.
-   */
   test('com histórico completo, os meses anteriores não ficam vazios', () => {
     const history = [tx(0, 50), tx(1, 60), tx(2, 70), tx(3, 80), tx(4, 90), tx(5, 100)];
     const h = getMonthlyHistory(history, 6);
@@ -57,7 +49,7 @@ describe('getMonthlyHistory', () => {
 
 describe('getMonthlyAverage', () => {
   test('ignora meses sem registos', () => {
-    // 3 meses com 100 e 3 vazios: a média é 100, não 50.
+
     const h = getMonthlyHistory([tx(0, 100), tx(1, 100), tx(2, 100)], 6);
     expect(getMonthlyAverage(h)).toBe(100);
   });
@@ -80,14 +72,14 @@ describe('getCategoryTrends', () => {
   });
 
   test('exclui o mês em curso, que está incompleto', () => {
-    // Só há gastos este mês: não há nada completo para comparar.
+
     expect(getCategoryTrends([tx(0, 500, 'Renda')], 3)).toHaveLength(0);
   });
 
   test('marca como nova uma categoria sem histórico anterior', () => {
     const [t] = getCategoryTrends([tx(1, 80, 'Saúde')], 3);
     expect(t.isNew).toBe(true);
-    expect(t.percent).toBeNull(); // "+100%" sobre zero seria enganador
+    expect(t.percent).toBeNull();
   });
 
   test('ordena pela maior variação absoluta', () => {

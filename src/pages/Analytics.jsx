@@ -22,16 +22,6 @@ const WINDOWS = [
   { value: 24, label: 'Últimos 24 meses' },
 ];
 
-/*
- * Esta página respondia às mesmas perguntas que o Painel e as Despesas — os
- * três gráficos existiam lá, a tabela existia aqui — e o gráfico de "6 meses"
- * recebia dados de um só mês, por isso cinco barras estavam sempre vazias.
- *
- * Passou a ter um trabalho que mais nenhuma faz: evolução ao longo do tempo.
- * O Painel mostra o mês corrente, os Relatórios um período escolhido, e esta
- * mostra a trajetória. Por isso vai buscar o histórico completo, sem filtro
- * de data — era precisamente esse filtro que esvaziava o gráfico.
- */
 export default function Analytics() {
   const [transactions, setTransactions] = useState([]);
   const [user, setUser] = useState(null);
@@ -42,7 +32,7 @@ export default function Analytics() {
 
   useEffect(() => {
     Promise.all([
-      // Sem query string: o histórico inteiro, que é o ponto da página.
+
       api.get('/api/transactions'),
       api.get('/api/me'),
     ])
@@ -66,8 +56,6 @@ export default function Analytics() {
   const windowTotal = sumAmounts(history, 'total');
   const monthsWithData = history.filter((m) => m.count > 0).length;
 
-  // Só os meses completos entram na distribuição: o mês em curso ainda está
-  // a meio e distorceria as proporções.
   const completedMonths = useMemo(() => {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth() - months, 1);

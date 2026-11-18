@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { FiDollarSign, FiCalendar, FiEdit2, FiType, FiX } from 'react-icons/fi';
 import { toLocalDateKey } from '../utils/format';
 
-// A function, not a constant: a module-level date was computed once at load
-// and went stale in a tab left open past midnight.
 const emptyForm = () => ({
   amount: '',
   category: '',

@@ -39,8 +39,7 @@ export default function GrokPanel({ open, onClose }) {
   const send = async (event) => {
     event.preventDefault();
     const content = draft.trim();
-    // busyRef is set synchronously so a double Enter in the same tick cannot
-    // fire two /api/assistant requests before React re-renders `busy`.
+
     if (!content || busyRef.current) return;
 
     if (messages.length + 1 > MAX_MESSAGES) {
@@ -59,8 +58,7 @@ export default function GrokPanel({ open, onClose }) {
       const { data } = await api.post('/api/assistant', { messages: next });
       setMessages([...next, { role: 'assistant', content: data.reply }]);
     } catch (err) {
-      // Roll back the optimistic user turn so a failed send cannot stick the
-      // panel above the server's 12-message cap with no way forward.
+
       setMessages(previous);
       setDraft(content);
       const code = err.response?.data?.code;

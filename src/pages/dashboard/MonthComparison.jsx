@@ -12,13 +12,6 @@ const WEEKS = [
   { label: '22+', from: 22, to: 31 },
 ];
 
-/*
- * Este mês contra o anterior, por semana.
- *
- * As etiquetas eram "S1 S2 S3 S4" — que não dizem a ninguém que são intervalos
- * de dias. Passam a ser os próprios dias. E as duas séries, que antes só se
- * distinguiam pela cor, passam a ter legenda.
- */
 export default function MonthComparison({ monthTransactions, lastMonthTransactions, symbol }) {
   const now = new Date();
   const thisLabel = capitalize(now.toLocaleDateString('pt-PT', { month: 'long' }));
@@ -62,8 +55,6 @@ export default function MonthComparison({ monthTransactions, lastMonthTransactio
         </div>
       </div>
 
-      {/* Legenda própria: com duas séries a identidade nunca pode depender só
-          da cor, e a do Recharts não herda os tokens de texto. */}
       <div style={{ display: 'flex', gap: 'var(--sp-4)', marginBottom: 'var(--sp-3)', flexWrap: 'wrap' }}>
         <span className="ui-chip">
           <span className="ui-chip__dot" style={{ background: 'var(--cat-1)' }} />
@@ -91,7 +82,7 @@ export default function MonthComparison({ monthTransactions, lastMonthTransactio
             cursor={{ fill: 'var(--surface-2)' }}
             labelFormatter={(l) => `Dias ${l}`}
           />
-          {/* Extremidade arredondada só no topo, ancorada à linha de base. */}
+
           <Bar dataKey={thisLabel} fill="var(--cat-1)" radius={[4, 4, 0, 0]} maxBarSize={28} />
           <Bar dataKey={prevLabel} fill="var(--border-strong)" radius={[4, 4, 0, 0]} maxBarSize={28} />
         </BarChart>

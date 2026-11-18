@@ -5,7 +5,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const pinoHttp = require('pino-http');
 
-// First: pins the process time zone before any date is computed.
 const env = require('./lib/env');
 const { logger } = require('./lib/logger');
 const sessionMiddleware = require('./lib/session');
@@ -26,20 +25,11 @@ const assistantRoutes = require('./routes/assistant');
 
 const app = express();
 
-/*
- * Behind a reverse proxy (nginx, Fly, Render, …) the client IP arrives in
- * X-Forwarded-For. Without this, every rate limit would bucket the whole
- * internet under the proxy's address, and secure cookies would not be set.
- * `1` = trust exactly one hop; never `true`, which lets a client spoof its
- * own IP and walk past the rate limiter.
- */
 app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
-/* ───────── Security & infrastructure middleware ───────── */
-
 app.use(helmet({
-  // Same-origin SPA in production, plus Google Fonts loaded from index.html.
+
   contentSecurityPolicy: env.isProd
     ? {
       directives: {
@@ -55,7 +45,7 @@ app.use(helmet({
 
 app.use(pinoHttp({
   logger,
-  // Health noise at info level drowns out everything worth reading.
+
   autoLogging: { ignore: (req) => req.url === '/api/health' },
   customLogLevel(req, res, err) {
     if (err || res.statusCode >= 500) return 'error';
@@ -69,52 +59,39 @@ app.use(pinoHttp({
 }));
 
 app.use(cors({
-  // An explicit allow-list, not a wildcard: cookies cannot be sent to a
-  // wildcard origin, and a wildcard would let any site call this API.
+
   origin(origin, callback) {
-    // Same-origin requests and curl send no Origin header at all.
+
     if (!origin) return callback(null, true);
     if (env.corsOrigins.includes(origin)) return callback(null, true);
-    // The dev server also serves the page, so the browser's own origin is
-    // this process. A missing entry here would reject login from that page.
+
     try {
       const url = new URL(origin);
       const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
       if (local && String(url.port || (url.protocol === 'https:' ? 443 : 80)) === String(env.PORT)) {
         return callback(null, true);
       }
-    } catch { /* not a URL */ }
-    // Reject without throwing — an Error here becomes a 500 for the browser.
+    } catch {}
+
     return callback(null, false);
   },
   credentials: true,
 }));
 
-// A body limit is a rate limit by another name: without it one request can
-// occupy the process for as long as it takes to parse a 2GB payload.
 app.use(express.json({ limit: '100kb' }));
 
 app.use(sessionMiddleware);
 
 app.use('/api', apiLimiter);
 
-/* ───────── Public routes ───────── */
-
 app.get('/api/health', (req, res) => {
-  // Deliberately says nothing about versions, the database or the environment.
+
   res.json({ status: 'ok' });
 });
 
 app.use('/api/auth', authRoutes);
 
-/*
- * Everything below this line requires a session. Mounting the gate on the
- * whole /api prefix means a route added later is protected by default —
- * forgetting to add `requireAuth` can no longer open a hole.
- */
 app.use('/api', requireAuth);
-
-/* ───────── Protected routes ───────── */
 
 app.use('/api', profileRoutes.router);
 app.get('/api/categories', (req, res) => res.json(categories));
@@ -125,21 +102,15 @@ app.use('/api/investments', investmentRoutes);
 app.use('/api/market', marketRoutes);
 app.use('/api', assistantRoutes);
 
-/* ───────── Static frontend ───────── */
-
 if (env.isProd) {
-  // Vite builds to `dist`. This used to point at `build`, a Create React App
-  // leftover that made every production request a 404.
+
   const distPath = path.join(__dirname, '..', 'dist');
   app.use(express.static(distPath));
 
-  // Anything that is not an API route falls through to the SPA shell.
   app.get(/^(?!\/api\/).*/, (req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
   });
 }
-
-/* ───────── Errors ───────── */
 
 app.use('/api', notFoundHandler);
 app.use(errorHandler);

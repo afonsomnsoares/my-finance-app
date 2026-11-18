@@ -4,8 +4,7 @@ export function getMonthDays(transactions, reference = new Date()) {
   const now = new Date();
   const year = reference.getFullYear();
   const month = reference.getMonth();
-  // "Hoje" e "futuro" só fazem sentido no mês corrente; num mês passado todos
-  // os dias já aconteceram.
+
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const dailyCents = {};
@@ -28,17 +27,6 @@ export function getMonthDays(transactions, reference = new Date()) {
   return result;
 }
 
-/*
- * Pontuação de "saúde financeira".
- *
- * Extraída do componente FinancialHealthScore, que desenhava um anel de 72px
- * para mostrar um número de dois dígitos e ocupava um cartão inteiro na fila
- * de KPIs. O valor passou a ser uma das métricas de apoio do número herói; o
- * cálculo é o mesmo.
- *
- * Nota: isto mede sobretudo quão completo está o perfil, não a saúde das
- * finanças. Só um dos nove critérios olha para o que foi gasto.
- */
 export function calcHealthScore(user, spentThisMonth) {
   if (!user) return 0;
   let score = 0;

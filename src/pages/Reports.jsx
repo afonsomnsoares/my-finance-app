@@ -77,16 +77,6 @@ export default function Reports() {
     ? report.total / report.transactionCount
     : 0;
 
-  /*
-   * Fetched through axios rather than pointed at with an <a href>.
-   *
-   * The export is an authenticated endpoint and the session lives in a
-   * cookie: a bare link is a cross-origin top-level navigation whose cookie
-   * handling depends on SameSite rules and which cannot surface a 401 to the
-   * user — it just renders the JSON error as a downloaded file. Going through
-   * the client means the same credentials, the same 401 interceptor, and a
-   * real error path.
-   */
   const handleExport = async (format) => {
     setExporting(format);
     setExportError('');
@@ -103,8 +93,7 @@ export default function Reports() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      // Releasing the object URL is what stops the blob leaking for the
-      // lifetime of the tab.
+
       URL.revokeObjectURL(url);
     } catch {
       setExportError('Não foi possível exportar o relatório.');
@@ -242,8 +231,7 @@ export default function Reports() {
                         <tr key={row.category}>
                           <td data-label="Categoria" style={{ fontWeight: 'var(--fw-medium)' }}>{row.category}</td>
                           <td data-label="">
-                            {/* A barra substitui o gráfico que estava ao lado a
-                                desenhar exatamente este mesmo ranking. */}
+
                             <div className="report-bar">
                               <div className="report-bar__fill" style={{ width: `${rel}%` }} />
                             </div>

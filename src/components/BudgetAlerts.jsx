@@ -4,10 +4,6 @@ import { FiAlertTriangle, FiChevronRight } from 'react-icons/fi';
 import { api } from '../utils/api';
 import { formatMoney, formatPercent } from '../utils/format';
 
-/*
- * Um único aviso compacto em vez de um painel com uma lista repetida.
- * Só aparece quando há mesmo algo excedido.
- */
 export default function BudgetAlerts({ symbol = '€' }) {
   const [exceeded, setExceeded] = useState([]);
 
@@ -15,7 +11,7 @@ export default function BudgetAlerts({ symbol = '€' }) {
     let cancelled = false;
     api.get('/api/budgets')
       .then(({ data }) => { if (!cancelled) setExceeded(data.budgets.filter((b) => b.exceeded)); })
-      .catch(() => { /* o dashboard funciona sem isto */ });
+      .catch(() => {});
     return () => { cancelled = true; };
   }, []);
 

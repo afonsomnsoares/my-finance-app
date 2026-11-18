@@ -35,12 +35,7 @@ export default function Login() {
       await login(username, password);
       navigate(from, { replace: true });
     } catch (err) {
-      /*
-       * The server deliberately returns one message for every kind of failed
-       * login, and the UI must not add detail it does not have. The only case
-       * worth distinguishing is being rate limited, because the user needs to
-       * know that waiting is the fix.
-       */
+
       if (err.response?.status === 429) {
         setError('Demasiadas tentativas. Tenta novamente dentro de 15 minutos.');
       } else if (err.response?.status === 401) {

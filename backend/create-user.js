@@ -1,27 +1,13 @@
-/*
- * Cria a conta da aplicação, interativamente.
- *
- * Substitui o seed.js, que tinha o nome e o email fixos no código ("Afonso
- * Noronha / afonso@gmail.com") e não definia password nenhuma.
- *
- * Como a app é de utilizador único, criar uma conta nova implica substituir a
- * existente — por isso o script mostra primeiro o que vai apagar e pede
- * confirmação explícita.
- *
- *   npm run create-user
- */
 const prisma = require('./lib/prisma');
 const pool = require('./lib/pool');
 const { hashPassword, passwordPolicyError } = require('./lib/password');
 const { ask, askUntilValid, confirm, close } = require('./lib/prompt');
 
-
 const required = (label) => (v) => (v ? null : `${label} é obrigatório.`);
 
 const validEmail = (v) => {
   if (!v) return 'O email é obrigatório.';
-  // Suficiente para apanhar erros de escrita; a validação a sério é conseguir
-  // receber correio, que não é trabalho deste script.
+
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : 'Email inválido.';
 };
 
@@ -81,10 +67,6 @@ async function main() {
     return;
   }
 
-  /*
-   * Apagar e criar numa só transação: se a criação falhar (um email duplicado,
-   * por exemplo), a conta antiga não fica apagada sem substituta.
-   */
   const user = await prisma.$transaction(async (tx) => {
     if (existing) await tx.user.delete({ where: { id: existing.id } });
     return tx.user.create({
@@ -98,7 +80,6 @@ async function main() {
     });
   });
 
-  // Drop any leftover sessions that still pointed at the replaced account.
   await pool.query('DELETE FROM user_sessions').catch((err) => {
     if (err.code !== '42P01') throw err;
   });
@@ -109,7 +90,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    // P2002 = violação de unicidade (email ou username já existem).
+
     if (e.code === 'P2002') {
       console.error(`\nJá existe uma conta com esse ${e.meta?.target?.join(' / ') || 'valor'}.`);
     } else {

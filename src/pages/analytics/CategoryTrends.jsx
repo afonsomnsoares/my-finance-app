@@ -1,13 +1,6 @@
 import { FiArrowDown, FiArrowUp, FiPlus } from 'react-icons/fi';
 import { formatMoney, formatPercent } from '../../utils/format';
 
-/*
- * Que categorias estão a crescer e quais estão a encolher.
- *
- * Isto é a razão de esta página existir: o Painel responde "quanto gastei este
- * mês", os Relatórios respondem "quanto gastei em setembro". Nenhum dos dois
- * responde "no que é que estou a gastar cada vez mais".
- */
 export default function CategoryTrends({ trends, symbol, window }) {
   if (trends.length === 0) {
     return (
@@ -45,11 +38,7 @@ export default function CategoryTrends({ trends, symbol, window }) {
         <tbody>
           {shown.map((t) => {
             const up = t.delta > 0;
-            /*
-             * Tratado como estável quando a variação arredonda a zero. Uma
-             * subida de 18 cêntimos mostrava "↑ 0%" com seta vermelha — o
-             * sinal dizia "está a piorar" e o número dizia "não mudou nada".
-             */
+
             const flat = t.delta === 0 || (t.percent !== null && Math.abs(t.percent) < 1);
             const Icon = t.isNew ? FiPlus : up ? FiArrowUp : FiArrowDown;
             return (
@@ -61,8 +50,7 @@ export default function CategoryTrends({ trends, symbol, window }) {
                   {flat ? (
                     <span className="muted">—</span>
                   ) : (
-                    /* Gastar mais é mau: "up" usa o vermelho, ao contrário
-                       dos investimentos. O ícone diz a direção sozinho. */
+
                     <span className={`ui-delta ui-delta--${up ? 'up' : 'down'}`}>
                       <Icon size={12} aria-hidden="true" />
                       {t.isNew

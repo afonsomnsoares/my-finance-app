@@ -5,15 +5,6 @@ export const TYPES = [
   { value: 'commodity', label: 'Commodity' },
 ];
 
-/*
- * Cor por tipo de ativo. Usa os slots validados de tokens.css em vez da
- * paleta Tailwind ad-hoc que aqui estava (#3b82f6 / #10b981 / #f59e0b /
- * #ef4444) — cores que não existiam em mais lado nenhum da app e que, ao
- * lado das semânticas, faziam a app ter três vermelhos diferentes.
- *
- * Aqui a cor codifica mesmo identidade: as fatias tocam-se no gráfico de
- * alocação, por isso a etiqueta sozinha não chega.
- */
 export const TYPE_COLORS = {
   stock: 'var(--cat-1)',
   etf: 'var(--cat-2)',

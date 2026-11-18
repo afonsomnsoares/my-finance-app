@@ -2,14 +2,6 @@ import { useEffect, useState } from 'react';
 import { api } from '../../utils/api';
 import { formatPercent } from '../../utils/format';
 
-/*
- * Fita de cotações dos ativos que o utilizador realmente tem.
- *
- * Antes mostrava uma lista fixa — NVDA, Bitcoin, Lockheed Martin — que não
- * tinha relação nenhuma com o dinheiro de quem estava a olhar. Num painel de
- * finanças pessoais, o espaço é para os teus ativos; se não tiveres nenhum, a
- * fita não aparece de todo.
- */
 export default function MarketTicker() {
   const [quotes, setQuotes] = useState([]);
 
@@ -24,7 +16,7 @@ export default function MarketTicker() {
 
         const { data } = await api.get(`/api/market/prices?symbols=${symbols.join(',')}`);
         if (!cancelled) setQuotes(Object.values(data));
-      } catch { /* a fita é opcional */ }
+      } catch {}
     };
 
     load();
@@ -34,7 +26,6 @@ export default function MarketTicker() {
 
   if (quotes.length === 0) return null;
 
-  // Duplicada para o deslize em ciclo não ter costura visível.
   const items = [...quotes, ...quotes];
 
   return (

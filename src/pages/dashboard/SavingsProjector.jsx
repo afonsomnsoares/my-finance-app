@@ -1,12 +1,6 @@
 import { useMemo, useState } from 'react';
 import { formatMoney } from '../../utils/format';
 
-/*
- * Ferramenta interativa: quanto tenho daqui a N anos se poupar X por mês.
- *
- * O valor inicial passou a ser o que sobra realmente (rendimento − gasto)
- * em vez de 200 fixos, para a primeira leitura já dizer alguma coisa.
- */
 export default function SavingsProjector({ monthlyIncome = 0, spentThisMonth = 0, symbol }) {
   const suggested = Math.max(50, Math.round(((monthlyIncome - spentThisMonth) || 200) / 50) * 50);
   const ceiling = Math.max(Math.round((monthlyIncome || 2500) * 0.8), 100);

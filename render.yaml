@@ -1,13 +1,8 @@
-# Render Blueprint. Connect this repo as a Web Service and Render reads these
-# settings. DATABASE_URL is filled in the dashboard (the Neon pooled URL) and
-# is never stored in the repository. SESSION_SECRET is generated once on create.
 services:
   - type: web
     name: personal-finances
     runtime: node
     plan: free
-    # migrate deploy runs on start. If DATABASE_URL_UNPOOLED is unset, start
-    # derives the direct Neon host from the pooled DATABASE_URL.
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
@@ -26,4 +21,3 @@ services:
         sync: false
       - key: XAI_API_KEY
         sync: false
-

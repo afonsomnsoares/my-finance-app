@@ -4,16 +4,6 @@ import {
 import ChartTooltip from '../dashboard/ChartTooltip';
 import { formatCompactMoney, formatMoney } from '../../utils/format';
 
-/*
- * Gasto mês a mês. É o gráfico principal desta página.
- *
- * O anterior prometia "os últimos 6 meses" mas era alimentado com transações
- * que a API já tinha filtrado para um único mês — cinco das seis barras
- * estavam sempre vazias. Agora recebe o histórico completo.
- *
- * Uma só cor com o mês corrente destacado: as barras comparam magnitude ao
- * longo do tempo, não identidades diferentes.
- */
 export default function MonthlyTrend({ history, symbol, monthlyBudget, average }) {
   const hasData = history.some((m) => m.total > 0);
 
@@ -55,8 +45,7 @@ export default function MonthlyTrend({ history, symbol, monthlyBudget, average }
               )}
               <Bar dataKey="total" radius={[4, 4, 0, 0]} maxBarSize={40}>
                 {history.map((m) => (
-                  /* O mês em curso está incompleto: fica mais claro para não
-                     ser lido como uma queda real. */
+
                   <Cell key={m.key} fill={m.isCurrent ? 'var(--border-strong)' : 'var(--cat-1)'} />
                 ))}
               </Bar>

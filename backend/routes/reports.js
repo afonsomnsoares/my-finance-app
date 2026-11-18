@@ -30,13 +30,10 @@ function splitByRange(rows, from, to) {
   });
 }
 
-/* ───────── Reports ───────── */
-
 router.get('/reports', validate({ query: schemas.reportQuery }), ah(async (req, res) => {
   const { from, to, label } = resolvePeriod(req.validatedQuery);
   const prev = previousPeriod({ type: req.validatedQuery.type, from });
 
-  // One query covering previous + current period instead of loading the whole ledger.
   const windowFrom = prev.from < from ? prev.from : from;
   const windowTo = prev.to > to ? prev.to : to;
   const windowTx = await userTransactionsInRange(req, windowFrom, windowTo);
@@ -70,8 +67,6 @@ router.get('/reports', validate({ query: schemas.reportQuery }), ah(async (req, 
     transactions,
   });
 }));
-
-/* ───────── Insights ───────── */
 
 router.get('/insights', ah(async (req, res) => {
   const user = plain(await prisma.user.findUnique({ where: { id: req.userId } }));
@@ -110,21 +105,12 @@ router.get('/insights', ah(async (req, res) => {
   });
 }));
 
-/* ───────── Export ───────── */
-
-/*
- * Spreadsheets treat a leading =, +, - or @ as the start of a formula, so a
- * description like `=HYPERLINK("http://evil","click")` executes when the file
- * is opened. Prefixing with an apostrophe forces the cell to stay text.
- */
 function csvCell(value) {
   const text = String(value ?? '');
   const escaped = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
   return `"${escaped.replace(/"/g, '""')}"`;
 }
 
-// Used in Content-Disposition; a filename may not carry quotes, control
-// characters or path separators.
 function safeFilename(label) {
   return label.replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase() || 'relatorio';
 }
@@ -177,7 +163,6 @@ router.get('/reports/export', validate({ query: schemas.exportQuery }), ah(async
   doc.fontSize(10).font('Helvetica-Bold').fillColor('#0f172a').text('Transações:', 40, doc.y);
   doc.moveDown(0.5);
 
-  // Every transaction is written; pdfkit paginates on its own.
   transactions.forEach((t) => {
     const d = localDateKey(t.date);
     doc.fontSize(8).font('Helvetica').fillColor('#0f172a')

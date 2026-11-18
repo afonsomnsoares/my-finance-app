@@ -2,13 +2,6 @@ import { FiSearch } from 'react-icons/fi';
 import { PERIOD_PRESETS } from '../utils/api';
 import { Field } from './ui';
 
-/*
- * Filtros numa linha, sempre visíveis.
- *
- * Antes era um cartão com título "Filtros", ícone próprio e um botão para
- * colapsar no telemóvel — um cartão inteiro de cromo à volta de três selects.
- * Os controlos são a interface; não precisam de moldura.
- */
 export default function FilterBar({
   preset, onPresetChange,
   customFrom, customTo, onCustomFromChange, onCustomToChange,

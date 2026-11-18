@@ -1,15 +1,3 @@
-/*
- * End-to-end tests of the HTTP API against a real Postgres.
- *
- * They run in a throwaway schema (`pf_test`) inside the database named by
- * DATABASE_URL, so the real tables in `public` are never read or written.
- * The schema is dropped and rebuilt from the migrations on every run.
- *
- *   npm test --prefix backend
- *
- * Without a reachable database the whole suite is skipped, not failed, so
- * the pure tests in security.test.js still run anywhere.
- */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
@@ -76,7 +64,6 @@ test('API integration', { skip: !canRun && 'DATABASE_URL not set' }, async (t) =
   const alice = await makeUser('alice');
   const bob = await makeUser('bob');
 
-  // Minimal cookie-carrying client.
   const client = () => {
     let cookie = '';
     const call = async (method, route, body) => {
@@ -136,23 +123,22 @@ test('API integration', { skip: !canRun && 'DATABASE_URL not set' }, async (t) =
 
   await t.test('monthly report totals, per-category totals and previous period', async () => {
     const seed = [
-      // September 2026
+
       { amount: 0.1, category: 'Renda', date: new Date(2026, 8, 5) },
       { amount: 0.2, category: 'Renda', date: new Date(2026, 8, 6) },
       { amount: 10, category: 'Alimentação', date: new Date(2026, 8, 30, 23, 59) },
-      // August 2026 — the previous period
+
       { amount: 7.25, category: 'Renda', date: new Date(2026, 7, 31, 12) },
-      // 00:30 on 1 October in Lisbon is 23:30 UTC on 30 September. It
-      // belongs to October: a UTC-based month boundary counted it here.
+
       { amount: 999, category: 'Renda', date: new Date('2026-09-30T23:30:00Z') },
     ];
     await prisma.transaction.createMany({ data: seed.map((s) => ({ ...s, userId: alice.id })) });
-    // Bob's data must never show up in Alice's totals.
+
     await prisma.transaction.create({ data: { userId: bob.id, amount: 500, category: 'Renda', date: new Date(2026, 8, 10) } });
 
     const { status, body } = await asAlice.get('/api/reports?type=month&year=2026&month=9');
     assert.equal(status, 200);
-    assert.equal(body.total, 10.3); // not 10.300000000000001
+    assert.equal(body.total, 10.3);
     assert.equal(body.transactionCount, 3);
     assert.equal(body.previousTotal, 7.25);
     assert.deepEqual(body.byCategory, [

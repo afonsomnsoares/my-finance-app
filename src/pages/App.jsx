@@ -26,12 +26,6 @@ import { formatMonthYear, formatMoney, formatPercent } from '../utils/format';
 import { addMoney } from '../utils/money';
 import './App.css';
 
-/*
- * Painel principal, agora alinhado com o design de referência: três cartões de
- * destaque no topo, uma barra de secção com filtros e uma grelha de quatro
- * colunas com o detalhe. O número herói antigo foi distribuído por esses três
- * cartões, que respondem às mesmas perguntas sem repetir valores.
- */
 export default function AppPage() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [monthOffset, setMonthOffset] = useState(0);
@@ -62,7 +56,6 @@ export default function AppPage() {
       });
   }, [monthDays]);
 
-  // O saldo ao longo do mês: rendimento menos o acumulado de despesas.
   const balanceSeries = useMemo(
     () => cumulative.map((spent) => income - spent),
     [cumulative, income]

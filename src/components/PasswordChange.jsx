@@ -3,13 +3,6 @@ import { FiKey } from 'react-icons/fi';
 import { api } from '../utils/api';
 import { Button, Field } from './ui';
 
-/*
- * Mudar a password sem sair da aplicação.
- *
- * Até aqui só existia `npm run set-password`, um comando de terminal — o que
- * significava que mudar a password implicava ter acesso à shell do servidor.
- * Para uma app de utilizador único isso é um obstáculo desnecessário.
- */
 export default function PasswordChange() {
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [error, setError] = useState('');

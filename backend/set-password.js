@@ -1,13 +1,3 @@
-/*
- * Sets the password for the single account, interactively.
- *
- * Deliberately not an HTTP endpoint: an unauthenticated "set the password"
- * route is exactly the kind of admin backdoor that should not exist. Whoever
- * runs this already has shell access to the server.
- *
- *   npm run set-password
- */
-
 const prisma = require('./lib/prisma');
 const pool = require('./lib/pool');
 const { hashPassword, passwordPolicyError } = require('./lib/password');
@@ -45,8 +35,6 @@ async function main() {
     data: { password: await hashPassword(password) },
   });
 
-  // CLI reset must revoke every browser session — there is no "current" cookie
-  // to keep, and a stolen pf.sid would otherwise keep working for 30 days.
   const revoked = await destroyAllSessionsForUser(user.id);
 
   console.log(`\nPassword definida. ${revoked} sessão(ões) terminada(s).`);

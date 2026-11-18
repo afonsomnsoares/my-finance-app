@@ -2,14 +2,6 @@ import { Link } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
 import { formatDate, formatMoney } from '../../utils/format';
 
-/*
- * As últimas despesas, numa tabela só.
- *
- * O dashboard mostrava isto duas vezes: uma agrupada por categoria (com
- * percentagens calculadas sobre 5 registos, o que dava "45%" para uma despesa)
- * e outra em lista cronológica. Ficou a lista; a distribuição por categoria
- * vive no seu próprio cartão, calculada sobre o mês inteiro.
- */
 export default function RecentTransactions({ transactions, symbol }) {
   if (transactions.length === 0) return null;
 

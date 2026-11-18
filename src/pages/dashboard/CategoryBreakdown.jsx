@@ -1,20 +1,6 @@
 import { formatMoney, formatPercent } from '../../utils/format';
 import { fromCents, sumAmounts, sumNumbers, toCents } from '../../utils/money';
 
-/*
- * Distribuição por categoria em barras horizontais, não em donut.
- *
- * Com 8 categorias um donut obriga a saltar entre fatia e legenda para ler
- * cada valor. Barras alinhadas à esquerda leem-se de cima para baixo, já
- * ordenadas, e cabe o valor e a percentagem em cada linha sem tooltip.
- *
- * Uma só cor, de propósito. Oito cores aqui não codificavam nada — o nome da
- * categoria está escrito em cada linha — e a ordem em que a lista aparece
- * (por valor) punha lado a lado pares indistinguíveis para quem tem
- * daltonismo: aqua vs magenta mediam ΔE 1,6. O comprimento da barra é que
- * carrega a informação; a cor fica reservada para significado (vermelho =
- * acima do orçamento, verde = ganho).
- */
 export default function CategoryBreakdown({ transactions, symbol, limit = 6 }) {
   const centsByCategory = {};
   for (const t of transactions) {
@@ -29,14 +15,6 @@ export default function CategoryBreakdown({ transactions, symbol, limit = 6 }) {
     .map(([category, value]) => ({ category, value }))
     .sort((a, b) => b.value - a.value);
 
-  /*
-   * O excedente agrupa-se numa linha só.
-   *
-   * Chamava-se "Outros" — que é também o nome de uma categoria real. Quando
-   * "Outros" ficava entre as mais gastas, apareciam duas linhas com a mesma
-   * chave: o React avisava, e o utilizador via a mesma etiqueta duas vezes com
-   * valores diferentes. O grupo passa a ter chave e nome próprios.
-   */
   const shown = rows.slice(0, limit);
   const rest = rows.slice(limit);
   if (rest.length > 0) {
@@ -84,7 +62,7 @@ export default function CategoryBreakdown({ transactions, symbol, limit = 6 }) {
                 </span>
               </span>
             </div>
-            {/* Marca fina, ancorada à linha de base, extremidade arredondada. */}
+
             <div style={{ height: 4, background: 'var(--surface-2)', borderRadius: 'var(--r-full)', overflow: 'hidden' }}>
               <div style={{
                 height: '100%',

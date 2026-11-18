@@ -1,8 +1,3 @@
-/*
- * Aggregation helpers. Amounts arrive as JS numbers (see lib/prisma.js).
- * Sum in integer cents so float residue like 0.1 + 0.2 never leaks into totals.
- */
-
 function toCents(value) {
   return Math.round(Number(value) * 100);
 }
@@ -16,7 +11,6 @@ function sumAmounts(rows) {
   return cents / 100;
 }
 
-// { [category]: total }, each total in cents then converted once.
 function totalsByCategory(rows) {
   const cents = {};
   for (const row of rows) {

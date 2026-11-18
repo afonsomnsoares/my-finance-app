@@ -1,14 +1,6 @@
 const rateLimit = require('express-rate-limit');
 const { securityEvent } = require('../lib/logger');
 
-/*
- * Rate limits. Three tiers, because the endpoints differ in what abuse costs:
- *
- *  - login:  brute force protection. Strict, and counts only failures.
- *  - market: every call is an outbound request to Yahoo Finance. Left open,
- *            a script here turns into a bill (or a ban) upstream.
- *  - api:    a general ceiling so nothing else can be hammered.
- */
 function onLimit(eventName) {
   return (req, res, _next, options) => {
     securityEvent(req, eventName, { limit: options.limit, windowMs: options.windowMs });
@@ -33,8 +25,7 @@ const loginLimiter = rateLimit({
   ...common,
   windowMs: 15 * 60 * 1000,
   limit: 10,
-  // A correct password should not eat into the allowance; only failed
-  // attempts count, which is what brute forcing actually produces.
+
   skipSuccessfulRequests: true,
   message: 'Too many login attempts. Try again in 15 minutes.',
   handler: onLimit('rate_limit_login'),
@@ -53,8 +44,7 @@ const assistantLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
   message: 'Too many questions for Grok. Please wait a few minutes.',
-  // The route is behind the session, so the bucket is the user id. The
-  // library otherwise rejects any custom generator that does not fold IPv6.
+
   keyGenerator: (req) => String(req.userId),
   validate: { keyGeneratorIpFallback: false },
   handler: onLimit('rate_limit_assistant'),

@@ -3,10 +3,6 @@ const categories = require('../constants/categories');
 const DATE_RE = /(\d{2})[/\-.](\d{2})[/\-.](\d{4})/;
 const AMOUNT_RE = /-?\d{1,3}(?:\.\d{3})*,\d{2}-?/g;
 
-/*
- * Longer phrases first, so "uber eats" is food and a plain "uber" stays a ride.
- * Matching is accent-insensitive and only looks for the phrase as written.
- */
 const RULES = [
   ['Alimentação', ['uber eats', 'bolt food', 'glovo', 'pingo doce', 'continente', 'minipreco', 'mercadona', 'intermarche', 'auchan', 'lidl', 'mcdonald', 'burger king', 'restaurante', 'padaria', 'starbucks', 'pizza hut']],
   ['Transporte', ['via verde', 'easyjet', 'ryanair', 'tap air', 'estacionamento', 'portagem', 'fertagus', 'carris', 'metro', 'repsol', 'uber', 'bolt', 'galp', 'prio']],

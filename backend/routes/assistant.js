@@ -29,9 +29,6 @@ router.post('/assistant', assistantLimiter, validate({ body: schemas.assistantCh
   const now = new Date();
   const previous = monthRange(now.getFullYear(), now.getMonth() - 1);
 
-  // Bound the ledger load: two months for totals + a short recent list.
-  // Hard cap on the two-month window so a stuffed ledger cannot blow memory
-  // on every chat turn. Snapshot output to xAI stays smaller still.
   const MONTH_WINDOW_CAP = 2000;
 
   const [monthWindow, recent, investments] = await Promise.all([

@@ -167,17 +167,6 @@ const marketSearchQuery = z.object({
   q: z.string().trim().min(1, 'Query is required.').max(50),
 });
 
-const assistantChat = z.object({
-  messages: z.array(z.object({
-    role: z.enum(['user', 'assistant']),
-    content: z.string()
-      .transform((s) => s.replace(/[\u0000-\u001F\u007F]/g, '').trim())
-      .pipe(z.string().min(1, 'Message is empty.').max(1500, 'Message is too long.')),
-  })).min(1, 'Send a message.').max(12, 'Conversation is too long. Start a new one.'),
-}).refine((data) => data.messages.at(-1).role === 'user', {
-  message: 'The last message must be from the user.',
-});
-
 module.exports = {
   idParam,
   login, passwordChange,
@@ -187,5 +176,4 @@ module.exports = {
   investmentCreate, investmentUpdate,
   reportQuery, exportQuery,
   marketQuotesQuery, marketPricesQuery, marketSearchQuery,
-  assistantChat,
 };

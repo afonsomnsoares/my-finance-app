@@ -21,7 +21,6 @@ const budgetRoutes = require('./routes/budgets');
 const reportRoutes = require('./routes/reports');
 const investmentRoutes = require('./routes/investments');
 const marketRoutes = require('./routes/market');
-const assistantRoutes = require('./routes/assistant');
 
 const app = express();
 
@@ -100,7 +99,6 @@ app.use('/api/budgets', budgetRoutes);
 app.use('/api', reportRoutes.router);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/market', marketRoutes);
-app.use('/api', assistantRoutes);
 
 if (env.isProd) {
 

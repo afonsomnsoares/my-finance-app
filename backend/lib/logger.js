@@ -29,8 +29,6 @@ const logger = pino({
       'DATABASE_URL',
       'DATABASE_URL_UNPOOLED',
       'SESSION_SECRET',
-      'XAI_API_KEY',
-      '*.XAI_API_KEY',
     ],
     censor: '[redacted]',
   },

@@ -18,4 +18,4 @@ services:
       - key: DATABASE_URL_UNPOOLED
         sync: false
       - key: CORS_ORIGIN
-        sync: false
+        value: https://personal-finances-wfcl.onrender.com

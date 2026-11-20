@@ -35,7 +35,7 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(5000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
-  CORS_ORIGIN: z.string().default('http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001'),
+  CORS_ORIGIN: z.string().optional(),
   APP_TIMEZONE: z.string().default('Europe/Lisbon').refine((tz) => {
     try { new Intl.DateTimeFormat('en', { timeZone: tz }); return true; } catch { return false; }
   }, 'APP_TIMEZONE must be an IANA zone name, e.g. Europe/Lisbon.'),
@@ -56,8 +56,14 @@ const env = parsed.data;
 
 process.env.TZ = env.APP_TIMEZONE;
 
+const LOCAL_CORS = 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001';
+// Production must not inherit localhost defaults — that would let a local page
+// call the live API with credentials. Prefer CORS_ORIGIN, then Render's URL.
+const corsOriginSource = env.CORS_ORIGIN
+  ?? (env.NODE_ENV === 'production' ? '' : LOCAL_CORS);
+
 const corsOrigins = [
-  ...env.CORS_ORIGIN.split(',').map((o) => o.trim()),
+  ...corsOriginSource.split(',').map((o) => o.trim()),
   process.env.RENDER_EXTERNAL_URL,
 ].filter(Boolean);
 

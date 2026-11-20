@@ -147,9 +147,10 @@ export function useInvestments() {
   }, [enriched, primary]);
 
   const bestPerformer = useMemo(() => {
-    if (enriched.length === 0) return null;
-    return enriched.reduce((best, curr) => (curr.pl ?? -Infinity) > (best.pl ?? -Infinity) ? curr : best, enriched[0]);
-  }, [enriched]);
+    const pool = enriched.filter((row) => row.comparable && row.currency === (primary?.currency));
+    if (pool.length === 0) return null;
+    return pool.reduce((best, curr) => ((curr.pl ?? -Infinity) > (best.pl ?? -Infinity) ? curr : best), pool[0]);
+  }, [enriched, primary]);
 
   const diversification = useMemo(() => calcDiversification(enriched), [enriched]);
 

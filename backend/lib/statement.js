@@ -191,7 +191,8 @@ function finalizeMovements(movements) {
   const seen = new Set();
   const unique = [];
   for (const movement of movements) {
-    const key = `${movement.date}|${movement.amount.toFixed(2)}|${fold(movement.description)}`;
+    const direction = movement.incoming ? 'income' : 'expense';
+    const key = `${movement.date}|${movement.amount.toFixed(2)}|${fold(movement.description)}|${direction}`;
     if (seen.has(key)) continue;
     seen.add(key);
     if (movement.incoming) movement.category = 'Rendimento';

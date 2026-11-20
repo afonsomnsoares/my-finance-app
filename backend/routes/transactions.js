@@ -9,6 +9,7 @@ const validate = require('../middleware/validate');
 const { writeLimiter } = require('../middleware/rateLimit');
 const schemas = require('../schemas');
 const { parseStatement, parseCsvStatement } = require('../lib/statement');
+const { resolveTransactionKind } = require('../lib/transactionKind');
 const { extractPdfItems } = require('../lib/pdfText');
 const ah = require('./asyncHandler');
 
@@ -209,7 +210,7 @@ router.post('/', writeLimiter, validate({ body: schemas.transactionCreate }), ah
       amount,
       category,
       description: description ?? null,
-      kind: kind === 'income' || category === 'Rendimento' ? 'income' : 'expense',
+      kind: resolveTransactionKind(kind, category),
       ...(date ? { date } : {}),
     },
   });
@@ -225,9 +226,15 @@ router.put('/:id',
     });
     if (!existing) return res.status(404).json({ error: 'Transaction not found.' });
 
+    const nextCategory = req.body.category ?? existing.category;
+    const nextKind = resolveTransactionKind(
+      req.body.kind ?? existing.kind,
+      nextCategory,
+      existing.kind
+    );
     const updated = await prisma.transaction.update({
       where: { id: existing.id },
-      data: req.body,
+      data: { ...req.body, kind: nextKind },
     });
     res.json(plain(updated));
   })

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getCurrencySymbol, toLocalDateKey } from '../../utils/format';
 import { calcTrend } from '../../utils/analytics';
 import { api } from '../../utils/api';
-import { sumAmounts } from '../../utils/money';
+import { roundMoney, sumAmounts } from '../../utils/money';
 import { getMonthDays } from './helpers';
 
 export function useDashboardData(offset = 0) {
@@ -70,7 +70,7 @@ export function useDashboardData(offset = 0) {
   );
   const monthlyBudget = user?.monthlyExpenses || 0;
   const budgetUsedPercent = monthlyBudget > 0 ? Math.min(Math.round((spentThisMonth / monthlyBudget) * 100), 100) : 0;
-  const balance = incomeThisMonth - spentThisMonth;
+  const balance = roundMoney(incomeThisMonth - spentThisMonth);
   const spendingTrend = calcTrend(spentThisMonth, spentLastMonth);
 
   const isCurrentMonth = offset === 0;

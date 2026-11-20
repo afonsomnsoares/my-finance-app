@@ -866,17 +866,14 @@
   justify-content: space-between;
   gap: var(--sp-4);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-6);
-  padding-bottom: var(--sp-5);
-  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-5);
 }
 
 .page-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.7rem, 2.4vw, 2.35rem);
+  font-size: 1.75rem;
   font-weight: var(--fw-bold);
   line-height: var(--leading-tight);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   color: var(--text);
   margin: 0;
 }
@@ -884,8 +881,7 @@
 .page-subtitle {
   font-size: var(--fs-sm);
   color: var(--text-muted);
-  margin: var(--sp-2) 0 0;
-  max-width: 52ch;
+  margin: var(--sp-1) 0 0;
 }
 
 .page-head__actions {
@@ -902,10 +898,9 @@
   align-items: center;
   gap: 2px;
   padding: 3px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--surface-2);
 }
 
 .month-switch__btn {
@@ -940,40 +935,22 @@
 }
 
 .metric-card {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: 20px 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 50%), var(--surface);
+  padding: 18px 20px;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   color: var(--text);
   min-width: 0;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-  animation: rise-in var(--dur-slow) var(--ease) both;
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
-
-.metric-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: var(--accent);
-  opacity: 0.9;
-}
-
-.metric-card--orange::before { background: var(--orange); }
-.metric-card--green::before { background: var(--success); }
-.metric-card--blue::before { background: var(--accent); }
-.metric-card--purple::before { background: var(--purple); }
 
 .metric-card:hover {
   border-color: var(--border-strong);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 .metric-card__top {
@@ -1018,11 +995,10 @@
 .metric-card__badge--neutral { background: var(--surface-3); color: var(--text-muted); }
 
 .metric-card__value {
-  font-family: var(--font-display);
-  font-size: clamp(1.55rem, 2vw, 1.9rem);
+  font-size: 1.75rem;
   font-weight: var(--fw-bold);
   line-height: 1.1;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
@@ -1081,10 +1057,9 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  font-family: var(--font-display);
   font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.03em;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-tight);
   color: var(--text);
   white-space: nowrap;
 }
@@ -1151,12 +1126,11 @@
 .finance-grid--wide { grid-template-columns: minmax(0, 1fr); }
 
 .filter-panel {
-  padding: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
   margin-bottom: var(--sp-4);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 50%), var(--surface);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
 }
 
 .filter-panel .filterbar { margin-bottom: 0; }
@@ -1179,10 +1153,10 @@
 
 .login-page {
   display: grid;
-  grid-template-columns: minmax(320px, 1.05fr) minmax(340px, 0.95fr);
+  grid-template-columns: minmax(300px, 0.9fr) minmax(340px, 1.1fr);
   min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  background: transparent;
+  background: var(--bg);
 }
 
 .login-page--center {
@@ -1193,44 +1167,27 @@
 }
 
 .login-intro {
-  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(40px, 7vw, 80px);
+  padding: 64px 56px;
   border-right: 1px solid var(--border);
-  background:
-    linear-gradient(160deg, rgba(61, 139, 253, 0.12), transparent 42%),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.02), transparent 35%),
-    var(--surface);
-  overflow: hidden;
-  animation: rise-in var(--dur-slow) var(--ease) both;
-}
-
-.login-intro__brand {
-  font-family: var(--font-display);
-  font-size: clamp(2.6rem, 5vw, 4.2rem);
-  font-weight: 650;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
-  color: var(--text);
-  margin: 0;
-  max-width: 10ch;
+  background: var(--surface);
 }
 
 .login-intro__title {
-  margin: var(--sp-5) 0 0;
-  max-width: 16ch;
-  font-size: clamp(1.15rem, 2vw, 1.45rem);
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.02em;
-  line-height: 1.35;
+  margin: 0;
+  max-width: 12ch;
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.03em;
+  line-height: var(--leading-tight);
   color: var(--text);
 }
 
 .login-intro__lead {
-  max-width: 38ch;
-  margin: var(--sp-3) 0 0;
+  max-width: 36ch;
+  margin: var(--sp-4) 0 0;
   color: var(--text-muted);
   font-size: var(--fs-base);
 }
@@ -1250,25 +1207,22 @@
   gap: 8px;
   min-height: 36px;
   padding: 6px 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  background: rgba(14, 16, 20, 0.45);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--bg);
   color: var(--text-muted);
   font-size: var(--fs-xs);
   font-weight: var(--fw-medium);
-  backdrop-filter: blur(8px);
 }
 
-.login-intro__item svg { flex-shrink: 0; color: var(--accent-hover); }
+.login-intro__item svg { flex-shrink: 0; color: var(--text-subtle); }
 
 .login-main {
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 0;
-  padding: clamp(28px, 5vw, 56px);
-  animation: rise-in var(--dur-slow) var(--ease) both;
-  animation-delay: 80ms;
+  padding: 48px 40px;
 }
 
 .login-panel {
@@ -1342,8 +1296,7 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .login-intro__brand { font-size: clamp(2rem, 8vw, 2.8rem); max-width: none; }
-  .login-intro__title { font-size: var(--fs-lg); max-width: none; }
+  .login-intro__title { font-size: var(--fs-2xl); max-width: none; }
   .login-intro__list { margin-top: var(--sp-4); }
   .login-main { align-items: flex-start; padding: 28px 18px 40px; }
 }

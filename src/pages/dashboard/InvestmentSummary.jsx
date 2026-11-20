@@ -88,7 +88,7 @@ export default function InvestmentSummary({ symbol }) {
       </div>
 
       <span className="ui-eyebrow">{hasPrices ? 'Valor atual' : 'Investido'}</span>
-      <p className="display" style={{ fontSize: 'var(--fs-2xl)', fontWeight: 'var(--fw-bold)', margin: 0 }}>
+      <p style={{ fontSize: 'var(--fs-2xl)', fontWeight: 'var(--fw-bold)', margin: 0, letterSpacing: '-0.02em' }}>
         {hasPrices ? formatMoney(current, displaySymbol) : '—'}
       </p>
 

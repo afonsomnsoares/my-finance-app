@@ -118,8 +118,8 @@ export default function Reports() {
       )}
       <header className="page-head">
         <div>
-          <span className="ui-eyebrow">Exportação</span>
-          <h1 className="page-title display">{report ? formatMoney(report.total, symbol) : '—'}</h1>
+          <span className="ui-eyebrow">Relatório</span>
+          <h1 className="page-title">{report ? formatMoney(report.total, symbol) : '—'}</h1>
           <p className="page-subtitle">
             <span style={{ color: 'var(--text)' }}>{capitalize(report?.label) || '—'}</span>
             {variation && (

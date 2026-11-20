@@ -35,6 +35,7 @@ export default function Login() {
       await login(username, password);
       navigate(from, { replace: true });
     } catch (err) {
+
       if (err.response?.status === 429) {
         setError('Demasiadas tentativas. Tenta novamente dentro de 15 minutos.');
       } else if (err.response?.status === 401) {
@@ -48,19 +49,16 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <section className="login-intro" aria-label="Apresentação">
-        <p className="ui-eyebrow">Finanças pessoais</p>
-        <h1 className="login-intro__brand">My Personal Finance</h1>
-        <p className="login-intro__title">
-          O dinheiro do mês, visto com clareza.
-        </p>
+      <section className="login-intro">
+        <p className="ui-eyebrow">Conta pessoal</p>
+        <h1 className="login-intro__title">My Personal Finance</h1>
         <p className="login-intro__lead">
-          Entradas, despesas, orçamentos e investimentos no mesmo sítio — sem folhas soltas.
+          Despesas, orçamentos e investimentos, no mesmo sítio em que os vês depois de entrar.
         </p>
         <ul className="login-intro__list">
           {AREAS.map(({ label, Icon }) => (
             <li key={label} className="login-intro__item">
-              <Icon size={15} aria-hidden="true" />
+              <Icon size={16} aria-hidden="true" />
               <span>{label}</span>
             </li>
           ))}
@@ -69,53 +67,55 @@ export default function Login() {
 
       <div className="login-main">
         <div className="login-panel">
-          <header className="page-head" style={{ borderBottom: 0, paddingBottom: 0, marginBottom: 'var(--sp-4)' }}>
+          <header className="page-head">
             <div>
               <p className="ui-eyebrow">Sessão</p>
-              <h2 className="page-title" style={{ fontSize: '1.85rem' }}>Entrar</h2>
-              <p className="page-subtitle">Utilizador e password da tua conta.</p>
+              <h2 className="page-title">Entrar</h2>
+              <p className="page-subtitle">
+                Utilizador e password da tua conta.
+              </p>
             </div>
           </header>
 
           <div className="ui-card">
-            <form className="form-stack" onSubmit={handleSubmit} noValidate>
-              <Field
-                label="Utilizador ou email"
-                name="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-                autoFocus
-                required
-              />
+              <form className="form-stack" onSubmit={handleSubmit} noValidate>
+                <Field
+                  label="Utilizador ou email"
+                  name="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  autoFocus
+                  required
+                />
 
-              <Field
-                label="Password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
+                <Field
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
 
-              {error && (
-                <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 0 }}>
-                  {error}
-                </div>
-              )}
+                {error && (
+                  <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 0 }}>
+                    {error}
+                  </div>
+                )}
 
-              <Button
-                type="submit"
-                variant="primary"
-                block
-                disabled={submitting || !username || !password}
-                icon={<FiLogIn size={16} />}
-              >
-                {submitting ? 'A entrar…' : 'Entrar'}
-              </Button>
-            </form>
-          </div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  block
+                  disabled={submitting || !username || !password}
+                  icon={<FiLogIn size={16} />}
+                >
+                  {submitting ? 'A entrar…' : 'Entrar'}
+                </Button>
+              </form>
+            </div>
         </div>
       </div>
     </div>

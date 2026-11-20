@@ -2,7 +2,7 @@
   min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   padding: 0;
-  background: transparent;
+  background: var(--bg);
 }
 
 .app-frame {
@@ -10,7 +10,7 @@
   width: 100%;
   min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  background: transparent;
+  background: var(--bg);
 
   overflow: clip;
 }
@@ -40,11 +40,10 @@
 }
 
 .sidebar__wordmark {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: var(--fw-bold);
-  letter-spacing: -0.04em;
-  line-height: 1.15;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
   color: var(--text);
   text-decoration: none;
 }
@@ -106,9 +105,8 @@
 }
 
 .sidebar__link--active {
-  background: linear-gradient(90deg, var(--accent-soft), transparent 70%), var(--surface-3);
+  background: var(--surface-3);
   color: var(--text);
-  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .sidebar__link svg { flex-shrink: 0; }
@@ -353,13 +351,11 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(145deg, var(--accent-soft), rgba(251, 138, 60, 0.12));
+  background: var(--accent-soft);
   color: var(--accent-hover);
   font-size: var(--fs-2xs);
   font-weight: var(--fw-bold);
   flex-shrink: 0;
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-sm);
 }
 
 .topbar__avatars .avatar {
@@ -385,10 +381,8 @@
 .topbar__more:hover { background: var(--surface-4); color: var(--text); }
 
 .shell-content {
-  width: min(100%, var(--content-max));
-  margin-inline: auto;
-  padding: 32px 28px 48px;
-  animation: rise-in var(--dur-slow) var(--ease) both;
+  width: 100%;
+  padding: 28px;
 }
 
 .shell-overlay {

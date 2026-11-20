@@ -91,10 +91,10 @@ export default function AppPage() {
       )}
       <header className="page-head">
         <div>
-          <span className="ui-eyebrow">Painel</span>
+          <span className="ui-eyebrow">Finanças pessoais</span>
           <h1 className="page-title">Visão geral</h1>
           <p className="page-subtitle">
-            {formatMonthYear(reference)} — saldo, entradas e onde o dinheiro está a ir
+            {formatMonthYear(reference)} · rendimento, despesas, poupança e objetivos
           </p>
         </div>
 

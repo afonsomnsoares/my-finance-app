@@ -108,12 +108,10 @@ export default function Profile() {
           </span>
           <div>
             <span className="ui-eyebrow">
-              <FiSettings size={12} style={{ marginRight: 4 }} aria-hidden="true" />Conta
+              <FiSettings size={12} style={{ marginRight: 4 }} aria-hidden="true" />Definições
             </span>
             <h1 className="page-title">{displayName}</h1>
-            <p className="page-subtitle">
-              {form.email || 'Sem email definido'} — perfil, orçamento e segurança
-            </p>
+            <p className="page-subtitle">{form.email || 'Sem email definido'}</p>
           </div>
         </div>
       </header>

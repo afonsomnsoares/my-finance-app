@@ -5,12 +5,12 @@ export default function EmptyState({ onAdd }) {
   return (
     <div className="ui-card">
       <div className="ui-empty">
-        <FiPlusCircle size={40} style={{ color: 'var(--accent-hover)' }} aria-hidden="true" />
-        <h2 className="ui-empty__title">Começa pelo primeiro movimento</h2>
+        <FiPlusCircle size={32} style={{ color: 'var(--text-subtle)' }} aria-hidden="true" />
+        <h2 className="ui-empty__title">Ainda não há despesas</h2>
         <p className="ui-empty__text">
-          Regista uma entrada ou uma despesa — ou importa o extrato — para o painel ganhar vida.
+          Regista a primeira despesa para começares a ver totais, tendências e o teu orçamento.
         </p>
-        <Button variant="primary" onClick={onAdd}>Nova transação</Button>
+        <Button variant="primary" onClick={onAdd}>Registar despesa</Button>
       </div>
     </div>
   );

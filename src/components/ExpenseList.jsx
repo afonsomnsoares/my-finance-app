@@ -59,7 +59,9 @@ export default function ExpenseList({
                 {tx.description || '—'}
               </td>
               <td className="num" data-label="Valor" style={{ fontWeight: 'var(--fw-semibold)' }}>
-                −{formatMoney(tx.amount, symbol)}
+                <span style={{ color: tx.kind === 'income' ? 'var(--success)' : undefined }}>
+                  {tx.kind === 'income' ? '+' : '−'}{formatMoney(tx.amount, symbol)}
+                </span>
               </td>
               <td className="num" data-label="">
                 <div className="ui-rowactions">

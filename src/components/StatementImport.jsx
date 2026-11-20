@@ -25,7 +25,7 @@ export default function StatementImport({ symbol, onImported }) {
       setNeedPassword(false);
       setPassword('');
       setResult(data);
-      if (data.created > 0) onImported();
+      if (data.created > 0 || data.createdIncome > 0) onImported();
     } catch (err) {
       const code = err.response?.data?.code;
       const message = err.response?.data?.error || 'Não foi possível importar o extrato.';
@@ -113,9 +113,8 @@ export default function StatementImport({ symbol, onImported }) {
       {result && (
         <Modal title="Extrato importado" onClose={close} maxWidth={560}>
           <p className="ui-card__subtitle" style={{ marginBottom: 'var(--sp-4)' }}>
-            {result.created === 1 ? '1 despesa criada.' : `${result.created} despesas criadas.`}
+            {result.createdExpenses ?? result.created} despesas e {result.createdIncome || 0} entradas criadas.
             {result.skippedDuplicates > 0 && ` ${result.skippedDuplicates} já existiam e ficaram de fora.`}
-            {result.skippedIncoming > 0 && ` ${result.skippedIncoming} entradas de dinheiro foram ignoradas.`}
           </p>
           {result.expenses.length > 0 && (
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--sp-2)', maxHeight: 320, overflow: 'auto' }}>

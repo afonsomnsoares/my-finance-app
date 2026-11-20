@@ -6,6 +6,7 @@ const categories = [
     "Renda",
     "Despesas Fixas",
     "Entretenimento",
+    "Rendimento",
     "Outros",
 ];
 

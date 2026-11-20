@@ -12,7 +12,7 @@ import CategoryBreakdown from './dashboard/CategoryBreakdown';
 
 import { api } from '../utils/api';
 import { getMonthlyHistory, getCategoryTrends, getMonthlyAverage } from '../utils/analytics';
-import { formatMoney, getCurrencySymbol } from '../utils/format';
+import { formatMoney, getCurrencySymbol, toLocalDateKey } from '../utils/format';
 import { sumAmounts } from '../utils/money';
 import './App.css';
 
@@ -31,9 +31,11 @@ export default function Analytics() {
   const [months, setMonths] = useState(12);
 
   useEffect(() => {
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth() - months * 2, 1);
+    const params = new URLSearchParams({ from: toLocalDateKey(from), to: toLocalDateKey(now) });
     Promise.all([
-
-      api.get('/api/transactions'),
+      api.get(`/api/transactions?${params}`),
       api.get('/api/me'),
     ])
       .then(([txRes, userRes]) => {
@@ -43,15 +45,19 @@ export default function Analytics() {
       })
       .catch(() => setError('Não foi possível carregar o histórico.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [months]);
 
   const symbol = getCurrencySymbol(user?.currency || 'EUR');
   const monthlyBudget = user?.monthlyExpenses || 0;
 
-  const history = useMemo(() => getMonthlyHistory(transactions, months), [transactions, months]);
+  const spending = useMemo(
+    () => transactions.filter((tx) => tx.kind !== 'income'),
+    [transactions]
+  );
+  const history = useMemo(() => getMonthlyHistory(spending, months), [spending, months]);
   const average = useMemo(() => getMonthlyAverage(history), [history]);
   const trendWindow = months >= 12 ? 3 : 2;
-  const trends = useMemo(() => getCategoryTrends(transactions, trendWindow), [transactions, trendWindow]);
+  const trends = useMemo(() => getCategoryTrends(spending, trendWindow), [spending, trendWindow]);
 
   const windowTotal = sumAmounts(history, 'total');
   const monthsWithData = history.filter((m) => m.count > 0).length;
@@ -60,11 +66,11 @@ export default function Analytics() {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth() - months, 1);
     const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-    return transactions.filter((t) => {
+    return spending.filter((t) => {
       const d = new Date(t.date);
       return d >= start && d <= endOfLastMonth;
     });
-  }, [transactions, months]);
+  }, [spending, months]);
 
   if (loading) {
     return (

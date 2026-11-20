@@ -75,7 +75,6 @@ async function main() {
         phoneNumber: phoneNumber || '',
         password: await hashPassword(password),
         currency: 'EUR',
-        onboardingCompleted: true,
       },
     });
   });

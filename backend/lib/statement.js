@@ -197,12 +197,16 @@ function parseStatement(items) {
     const key = `${movement.date}|${movement.amount.toFixed(2)}|${fold(movement.description)}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    if (!categories.includes(movement.category)) movement.category = 'Outros';
+    if (movement.incoming) movement.category = 'Rendimento';
+    else if (!categories.includes(movement.category)) movement.category = 'Outros';
     unique.push(movement);
   }
+  const publish = ({ incoming, ...rest }) => rest;
+  const income = unique.filter((movement) => movement.incoming).map(publish);
   return {
-    expenses: unique.filter((movement) => !movement.incoming).map(({ incoming, ...rest }) => rest),
-    incoming: unique.filter((movement) => movement.incoming).length,
+    expenses: unique.filter((movement) => !movement.incoming).map(publish),
+    income,
+    incoming: income.length,
   };
 }
 

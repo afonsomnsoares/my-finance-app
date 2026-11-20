@@ -8,7 +8,7 @@ export default function RecentTransactions({ transactions, symbol }) {
   return (
     <section className="ui-section">
       <div className="ui-section__head">
-        <h2 className="ui-section__title">Últimas despesas</h2>
+        <h2 className="ui-section__title">Últimos movimentos</h2>
         <Link to="/app/expenses" className="ui-section__link">
           Ver todas <FiChevronRight size={14} />
         </Link>
@@ -32,8 +32,8 @@ export default function RecentTransactions({ transactions, symbol }) {
                   <span className="ui-chip">{tx.category}</span>
                 </td>
                 <td className="muted" data-label="Descrição">{tx.description || '—'}</td>
-                <td className="num" data-label="Valor" style={{ fontWeight: 'var(--fw-semibold)' }}>
-                  −{formatMoney(tx.amount, symbol)}
+                <td className="num" data-label="Valor" style={{ fontWeight: 'var(--fw-semibold)', color: tx.kind === 'income' ? 'var(--success)' : undefined }}>
+                  {tx.kind === 'income' ? '+' : '−'}{formatMoney(tx.amount, symbol)}
                 </td>
               </tr>
             ))}

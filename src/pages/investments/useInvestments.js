@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getCurrencySymbol } from '../../utils/format';
 import { api } from '../../utils/api';
-import { roundMoney, sumMoneyProducts } from '../../utils/money';
+import { sumMoneyProducts } from '../../utils/money';
 import { TYPES } from './constants';
-import { calcDiversification } from './helpers';
+import { calcDiversification, portfolioView } from './helpers';
 
 export function useInvestments() {
   const [investments, setInvestments] = useState([]);
@@ -97,37 +97,23 @@ export function useInvestments() {
     return () => { clearTimeout(timer); setSearching(false); };
   }, [form.name, showModal, selectedSuggestion]);
 
-  const symbol = getCurrencySymbol(user?.currency || 'EUR');
+  const homeCurrency = user?.currency || 'EUR';
 
-  const totalCost = useMemo(() => sumMoneyProducts(investments, 'amount', 'buyPrice'), [investments]);
-  const totalCurrent = useMemo(
-    () => sumMoneyProducts(
-      investments
-        .filter((i) => prices[i.name]?.price)
-        .map((i) => ({ amount: i.amount, price: prices[i.name].price })),
-      'amount',
-      'price'
-    ),
+  const { enriched, groups, excluded } = useMemo(
+    () => portfolioView(investments, prices),
     [investments, prices]
   );
-  const totalPL = roundMoney(totalCurrent - totalCost);
+  const primary = groups.find((group) => group.currency === homeCurrency) || (groups.length === 1 ? groups[0] : null);
+  const otherGroups = groups.filter((group) => group !== primary);
+  const totalCost = primary?.cost || 0;
+  const totalCurrent = primary?.current || 0;
+  const totalPL = primary?.pl || 0;
   const totalPLPercent = totalCost > 0 ? (totalPL / totalCost) * 100 : 0;
-  const hasLivePrices = investments.some(i => prices[i.name]);
-  const goalProgress = goalTarget > 0 ? Math.min((totalCurrent / goalTarget) * 100, 100) : 0;
-
-  const enriched = useMemo(() => {
-    return investments.map((inv) => {
-      const quote = prices[inv.name];
-      const currentPrice = quote?.price;
-      const currentValue = currentPrice != null ? roundMoney(inv.amount * currentPrice) : null;
-      const costValue = roundMoney(inv.amount * inv.buyPrice);
-      const pl = currentValue != null ? roundMoney(currentValue - costValue) : null;
-      const plPercent = pl != null && costValue > 0 ? (pl / costValue) * 100 : null;
-      const allocation = totalCost > 0 ? (costValue / totalCost) * 100 : 0;
-      const dailyChange = quote?.changePercent;
-      return { ...inv, currentPrice, currentValue, costValue, pl, plPercent, allocation, dailyChange };
-    });
-  }, [investments, prices, totalCost]);
+  const hasLivePrices = Boolean(primary);
+  const symbol = getCurrencySymbol(primary?.currency || homeCurrency);
+  const goalProgress = goalTarget > 0 && primary?.currency === homeCurrency
+    ? Math.min((totalCurrent / goalTarget) * 100, 100)
+    : 0;
 
   const filtered = useMemo(() => {
     if (!searchTerm) return enriched;
@@ -148,14 +134,17 @@ export function useInvestments() {
   }, [filtered, sortBy]);
 
   const pieData = useMemo(() => {
+    const priced = enriched.filter((inv) => inv.comparable && inv.currency === (primary?.currency));
+    const base = sumMoneyProducts(priced, 'amount', 'buyPrice');
     const byType = {};
-    enriched.forEach(inv => {
+    priced.forEach((inv) => {
       byType[inv.type] = (byType[inv.type] || 0) + inv.costValue;
     });
+    if (base <= 0) return [];
     return Object.entries(byType)
-      .map(([type, value]) => ({ name: TYPES.find(t => t.value === type)?.label || type, value: (value / totalCost) * 100, type }))
+      .map(([type, value]) => ({ name: TYPES.find(t => t.value === type)?.label || type, value: (value / base) * 100, type }))
       .sort((a, b) => b.value - a.value);
-  }, [enriched, totalCost]);
+  }, [enriched, primary]);
 
   const bestPerformer = useMemo(() => {
     if (enriched.length === 0) return null;
@@ -244,6 +233,7 @@ export function useInvestments() {
     searchTerm, setSearchTerm, goalTarget, form, setForm, error, priceError,
     searchResults, searching, showDropdown, setShowDropdown, selectedSuggestion,
     setSelectedSuggestion, symbol, totalCost, totalCurrent, totalPL, totalPLPercent,
+    otherGroups, excluded, primaryCurrency: primary?.currency || homeCurrency,
     hasLivePrices, goalProgress, enriched, filtered, sorted, pieData, bestPerformer,
     diversification, openAdd, openEdit, closeModal, handleSubmit, handleDelete,
     handleSelectSuggestion, handleGoalChange, fetchInvestments, refreshPrices,

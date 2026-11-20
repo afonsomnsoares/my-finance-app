@@ -36,7 +36,7 @@ export default function Reports() {
   const [reportType, setReportType] = useState('month');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [exporting, setExporting] = useState('');
+  const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState('');
 
   const fetchReport = useCallback(async (signal) => {
@@ -73,15 +73,15 @@ export default function Reports() {
     label: new Date(2000, i, 1).toLocaleDateString('pt-PT', { month: 'long' }),
   }));
 
-  const avgPerTx = report && report.transactionCount > 0
-    ? report.total / report.transactionCount
+  const avgPerTx = report && report.expenseCount > 0
+    ? report.total / report.expenseCount
     : 0;
 
-  const handleExport = async (format) => {
-    setExporting(format);
+  const handleExport = async () => {
+    setExporting(true);
     setExportError('');
     try {
-      const params = new URLSearchParams({ format, type: reportType, year: String(year) });
+      const params = new URLSearchParams({ type: reportType, year: String(year) });
       if (reportType === 'month') params.set('month', String(month));
 
       const { data } = await api.get(`/api/reports/export?${params}`, { responseType: 'blob' });
@@ -89,7 +89,7 @@ export default function Reports() {
       const url = URL.createObjectURL(data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `relatorio-${reportType === 'month' ? `${year}-${String(month).padStart(2, '0')}` : year}.${format}`;
+      a.download = `relatorio-${reportType === 'month' ? `${year}-${String(month).padStart(2, '0')}` : year}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -98,7 +98,7 @@ export default function Reports() {
     } catch {
       setExportError('Não foi possível exportar o relatório.');
     } finally {
-      setExporting('');
+      setExporting(false);
     }
   };
 
@@ -132,16 +132,14 @@ export default function Reports() {
                 {' '}vs. período anterior
               </>
             )}
-            {report && ` · ${report.transactionCount} transações`}
+            {report && ` · ${report.transactionCount} movimentos`}
+            {report?.income > 0 && ` · ${formatMoney(report.income, symbol)} em entradas`}
           </p>
         </div>
         {report && !loading && (
           <div className="page-head__actions">
-            <Button variant="secondary" onClick={() => handleExport('csv')} disabled={exporting !== ''} icon={<FiDownload size={15} />}>
-              {exporting === 'csv' ? 'A exportar…' : 'CSV'}
-            </Button>
-            <Button variant="secondary" onClick={() => handleExport('pdf')} disabled={exporting !== ''} icon={<FiDownload size={15} />}>
-              {exporting === 'pdf' ? 'A exportar…' : 'PDF'}
+            <Button variant="secondary" onClick={handleExport} disabled={exporting} icon={<FiDownload size={15} />}>
+              {exporting ? 'A exportar…' : 'CSV'}
             </Button>
           </div>
         )}

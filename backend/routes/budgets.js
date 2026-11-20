@@ -22,7 +22,7 @@ router.get('/', ah(async (req, res) => {
     take: 10_000,
   }));
 
-  const spentByCategory = totalsByCategory(monthTransactions);
+  const spentByCategory = totalsByCategory(monthTransactions.filter((row) => row.kind !== 'income'));
 
   const status = budgets.map((b) => {
     const spent = spentByCategory[b.category] || 0;

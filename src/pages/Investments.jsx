@@ -13,7 +13,7 @@ import AllocationBar from './investments/AllocationBar';
 import { useInvestments } from './investments/useInvestments';
 import { TYPES, TYPE_COLORS, SORT_OPTIONS } from './investments/constants';
 
-import { formatMoney, formatPercent, formatSignedMoney } from '../utils/format';
+import { formatMoney, formatPercent, formatSignedMoney, getCurrencySymbol } from '../utils/format';
 import './App.css';
 
 const typeLabel = (v) => TYPES.find((t) => t.value === v)?.label || v;
@@ -24,6 +24,7 @@ export default function Investments() {
     searchTerm, setSearchTerm, goalTarget, form, setForm, error, priceError,
     searchResults, searching, showDropdown, setShowDropdown, selectedSuggestion,
     setSelectedSuggestion, symbol, totalCost, totalCurrent, totalPL, totalPLPercent,
+    otherGroups, excluded, primaryCurrency,
     hasLivePrices, goalProgress, filtered, sorted, pieData, bestPerformer,
     diversification, openAdd, openEdit, closeModal, handleSubmit, handleDelete,
     handleSelectSuggestion, handleGoalChange, refreshPrices,
@@ -45,7 +46,7 @@ export default function Investments() {
         <div>
           <span className="ui-eyebrow">Carteira</span>
           <h1 className="page-title">
-            {formatMoney(hasLivePrices ? totalCurrent : totalCost, symbol)}
+            {hasLivePrices ? formatMoney(totalCurrent, symbol) : '—'}
           </h1>
           {investments.length > 0 && (
             <p className="page-subtitle">
@@ -57,8 +58,15 @@ export default function Investments() {
                   {' · '}{investments.length} ativos
                 </>
               ) : (
-                <>{investments.length} ativos · cotações indisponíveis</>
+                <>{investments.length} ativos · cotações indisponíveis na moeda de cada posição</>
               )}
+              {excluded > 0 && hasLivePrices && ` · ${excluded} fora do total`}
+              {otherGroups.length > 0 && otherGroups.map((group) => (
+                <span key={group.currency}>
+                  {' · '}
+                  {formatMoney(group.current, getCurrencySymbol(group.currency))} em {group.currency}
+                </span>
+              ))}
             </p>
           )}
         </div>
@@ -82,10 +90,10 @@ export default function Investments() {
           <div className="stat-grid">
             <MetricCard
               label="Valor investido"
-              value={formatMoney(totalCost, symbol)}
+              value={hasLivePrices ? formatMoney(totalCost, symbol) : '—'}
               icon={<FiTrendingUp size={16} />}
               accent="blue"
-              hint="custo de aquisição"
+              hint={hasLivePrices ? `custo em ${primaryCurrency}` : 'sem cotações na moeda de compra'}
             />
             <MetricCard
               label="Resultado"
@@ -164,8 +172,10 @@ export default function Investments() {
                               </span>
                             </td>
                             <td className="num muted" data-label="Unid.">{inv.amount}</td>
-                            <td className="num muted" data-label="Compra">{formatMoney(inv.buyPrice, symbol)}</td>
-                            <td className="num" data-label="Atual">{inv.currentPrice ? formatMoney(inv.currentPrice, symbol) : <span className="muted">—</span>}</td>
+                            <td className="num muted" data-label="Compra">{formatMoney(inv.buyPrice, getCurrencySymbol(inv.currency))}</td>
+                            <td className="num" data-label="Atual">
+                              {inv.currentPrice ? formatMoney(inv.currentPrice, getCurrencySymbol(inv.currency)) : <span className="muted">—</span>}
+                            </td>
                             <td className="num" data-label="Dia">
                               {inv.dailyChange != null ? (
                                 <span className={`ui-delta ui-delta--${inv.dailyChange >= 0 ? 'gain' : 'loss'}`}>
@@ -176,7 +186,7 @@ export default function Investments() {
                             <td className="num" data-label="P&L">
                               {inv.pl != null ? (
                                 <span className={`ui-delta ui-delta--${inv.pl >= 0 ? 'gain' : 'loss'}`}>
-                                  {formatSignedMoney(inv.pl, symbol)}
+                                  {formatSignedMoney(inv.pl, getCurrencySymbol(inv.currency))}
                                 </span>
                               ) : <span className="muted">—</span>}
                             </td>

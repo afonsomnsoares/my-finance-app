@@ -5,7 +5,7 @@ import AppShell from '../components/AppShell';
 import BudgetSettings from '../components/BudgetSettings';
 import PasswordChange from '../components/PasswordChange';
 import { Button, Field } from '../components/ui';
-import { EMPLOYMENT_OPTIONS, EXPERIENCE_OPTIONS, GOAL_OPTIONS } from '../utils/profileOptions';
+import { GOAL_OPTIONS } from '../utils/profileOptions';
 import { api } from '../utils/api';
 import { getCurrencySymbol } from '../utils/format';
 import './App.css';
@@ -20,7 +20,7 @@ const EMPTY = {
   firstName: '', lastName: '', email: '', username: '',
   phoneNumber: '', birthday: '',
   monthlyIncome: '', monthlyExpenses: '', fixedExpenses: '', savingsTarget: '',
-  currency: 'EUR', financialGoal: '', employmentStatus: '', budgetingExperience: '',
+  currency: 'EUR', financialGoal: '',
 };
 
 const fromUser = (u) => ({
@@ -37,8 +37,6 @@ const fromUser = (u) => ({
   savingsTarget: u.savingsTarget ?? '',
   currency: u.currency || 'EUR',
   financialGoal: u.financialGoal || '',
-  employmentStatus: u.employmentStatus || '',
-  budgetingExperience: u.budgetingExperience || '',
 });
 
 function initials(form) {
@@ -101,7 +99,7 @@ export default function Profile() {
   return (
     <AppShell>
       <header className="page-head">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+        <div className="page-identity">
           <span
             className="avatar"
             aria-hidden="true"
@@ -142,7 +140,7 @@ export default function Profile() {
               <h2 className="ui-card__title">Dados financeiros</h2>
               <p className="ui-card__subtitle">Alimentam o saldo, o orçamento e os alertas do painel.</p>
               <div className="ui-grid ui-grid--2" style={{ marginTop: 'var(--sp-4)' }}>
-                <Field label="Rendimento mensal" type="number" min="0" step="0.01" hint={`Em ${symbol}`} value={form.monthlyIncome} onChange={change('monthlyIncome')} placeholder="2500.00" />
+                <Field label="Rendimento mensal esperado" type="number" min="0" step="0.01" hint="O saldo usa as entradas registadas, não este valor" value={form.monthlyIncome} onChange={change('monthlyIncome')} placeholder="2500.00" />
                 <Field label="Orçamento mensal" type="number" min="0" step="0.01" hint="Quanto planeias gastar" value={form.monthlyExpenses} onChange={change('monthlyExpenses')} placeholder="1400.00" />
                 <Field label="Despesas fixas" type="number" min="0" step="0.01" hint="Renda, contas, seguros" value={form.fixedExpenses} onChange={change('fixedExpenses')} placeholder="900.00" />
                 <Field label="Meta de poupança" type="number" min="0" step="0.01" hint="Por mês" value={form.savingsTarget} onChange={change('savingsTarget')} placeholder="300.00" />
@@ -153,14 +151,6 @@ export default function Profile() {
                   <option value="">Sem objetivo definido</option>
                   {GOAL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </Field>
-                <Field label="Situação profissional" as="select" value={form.employmentStatus} onChange={change('employmentStatus')}>
-                  <option value="">Não indicada</option>
-                  {EMPLOYMENT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </Field>
-                <Field label="Experiência com orçamentos" as="select" value={form.budgetingExperience} onChange={change('budgetingExperience')}>
-                  <option value="">Não indicada</option>
-                  {EXPERIENCE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </Field>
               </div>
             </div>
 
@@ -168,7 +158,7 @@ export default function Profile() {
               type="submit"
               variant="primary"
               block
-              className="mt-4"
+              style={{ marginTop: 'var(--sp-5)' }}
               disabled={submitting}
               icon={<FiSave size={15} />}
             >

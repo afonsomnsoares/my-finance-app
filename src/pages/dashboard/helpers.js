@@ -26,18 +26,3 @@ export function getMonthDays(transactions, reference = new Date()) {
   }
   return result;
 }
-
-export function calcHealthScore(user, spentThisMonth) {
-  if (!user) return 0;
-  let score = 0;
-  if (user.onboardingCompleted) score += 15;
-  if (user.monthlyIncome > 0) score += 15;
-  if (user.monthlyExpenses > 0) score += 15;
-  if (user.savingsTarget > 0) score += 15;
-  if (user.financialGoal) score += 10;
-  if (user.fixedExpenses > 0) score += 10;
-  if (user.monthlyIncome > 0 && user.monthlyExpenses > 0 && spentThisMonth <= user.monthlyIncome * 0.7) score += 10;
-  if (user.employmentStatus) score += 5;
-  if (user.budgetingExperience) score += 5;
-  return Math.min(score, 100);
-}

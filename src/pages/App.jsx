@@ -19,8 +19,6 @@ import SavingsProjector from './dashboard/SavingsProjector';
 import RecentTransactions from './dashboard/RecentTransactions';
 import EmptyState from './dashboard/EmptyState';
 import QuickAddModal from './dashboard/QuickAddModal';
-import MarketTicker from './dashboard/MarketTicker';
-
 import { useDashboardData } from './dashboard/useDashboardData';
 import { formatMonthYear, formatMoney, formatPercent } from '../utils/format';
 import { addMoney } from '../utils/money';
@@ -31,13 +29,13 @@ export default function AppPage() {
   const [monthOffset, setMonthOffset] = useState(0);
 
   const {
-    user, truncated, error, loading, fetchData,
+    truncated, error, loading, fetchData,
     symbol, monthTransactions, spentThisMonth, lastMonthTransactions,
-    monthlyBudget, balance, spendingTrend, avgDaily,
+    incomeThisMonth, monthlyBudget, balance, spendingTrend, avgDaily,
     monthDays, hasTransactions, recentTransactions, reference, isCurrentMonth,
   } = useDashboardData(monthOffset);
 
-  const income = user?.monthlyIncome || 0;
+  const income = incomeThisMonth;
   const spentPercent = income > 0 ? Math.round((spentThisMonth / income) * 100) : 0;
   const trendTone = spendingTrend.direction === 'up'
     ? 'negative'
@@ -139,13 +137,13 @@ export default function AppPage() {
               accent="orange"
               badge={trendBadge}
               badgeTone={trendTone}
-              hint="Rendimento mensal menos despesas"
+              hint="Entradas registadas menos despesas"
             >
               <Sparkline values={balanceSeries} color="var(--orange)" />
             </MetricCard>
 
             <MetricCard
-              label="Rendimento mensal"
+              label="Entradas do mês"
               value={formatMoney(income, symbol)}
               icon={<FiCalendar size={16} />}
               accent="blue"
@@ -161,7 +159,9 @@ export default function AppPage() {
               value={formatMoney(spentThisMonth, symbol)}
               icon={<FiCreditCard size={16} />}
               accent="green"
-              hint={`${spentPercent}% do rendimento gasto · média diária ${formatMoney(avgDaily, symbol)}`}
+              hint={income > 0
+                ? `${spentPercent}% das entradas gasto · média diária ${formatMoney(avgDaily, symbol)}`
+                : `Sem entradas neste mês · média diária ${formatMoney(avgDaily, symbol)}`}
             >
               <div className="metric-card__progress">
                 <div
@@ -234,8 +234,6 @@ export default function AppPage() {
           <div id="transacoes">
             <RecentTransactions transactions={recentTransactions} symbol={symbol} />
           </div>
-
-          <MarketTicker />
         </>
       )}
 

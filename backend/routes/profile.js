@@ -14,9 +14,8 @@ const router = express.Router();
 
 const USER_FIELDS = [
   'id', 'firstName', 'lastName', 'birthday', 'phoneNumber', 'email', 'username',
-  'onboardingCompleted', 'monthlyIncome', 'currency', 'financialGoal',
-  'monthlyExpenses', 'fixedExpenses', 'savingsTarget', 'employmentStatus',
-  'budgetingExperience', 'createdAt',
+  'monthlyIncome', 'currency', 'financialGoal',
+  'monthlyExpenses', 'fixedExpenses', 'savingsTarget', 'createdAt',
 ];
 
 function stripPassword(user) {

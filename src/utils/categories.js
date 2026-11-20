@@ -6,6 +6,7 @@ export const CATEGORIES = [
   'Renda',
   'Despesas Fixas',
   'Entretenimento',
+  'Rendimento',
   'Outros',
 ];
 
@@ -24,7 +25,7 @@ const HEX_BY_INDEX = [
 
 export function categoryHex(name) {
   const i = CATEGORIES.indexOf(name);
-  return i >= 0 ? HEX_BY_INDEX[i] : HEX_BY_INDEX[7];
+  return HEX_BY_INDEX[i] || HEX_BY_INDEX[7];
 }
 
 export const CATEGORY_ICONS = {
@@ -35,5 +36,6 @@ export const CATEGORY_ICONS = {
   'Renda': '🏠',
   'Despesas Fixas': '📋',
   'Entretenimento': '🎬',
+  'Rendimento': '💶',
   'Outros': '📦',
 };

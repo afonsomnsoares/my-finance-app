@@ -1,4 +1,60 @@
-import { sumNumbers } from '../../utils/money';
+import { roundMoney, sumMoneyProducts, sumNumbers } from '../../utils/money';
+
+export function portfolioView(investments, prices) {
+  const enriched = investments.map((inv) => {
+    const quote = prices[inv.name];
+    const comparable = quote?.price != null && quote.currency === inv.currency;
+    const costValue = roundMoney(inv.amount * inv.buyPrice);
+    const currentPrice = comparable ? quote.price : null;
+    const currentValue = currentPrice != null ? roundMoney(inv.amount * currentPrice) : null;
+    const pl = currentValue != null ? roundMoney(currentValue - costValue) : null;
+    const plPercent = pl != null && costValue > 0 ? (pl / costValue) * 100 : null;
+    return {
+      ...inv,
+      comparable,
+      quoteCurrency: quote?.currency || null,
+      currentPrice,
+      currentValue,
+      costValue,
+      pl,
+      plPercent,
+      dailyChange: quote?.changePercent,
+    };
+  });
+
+  const groups = [];
+  for (const currency of [...new Set(enriched.filter((row) => row.comparable).map((row) => row.currency))]) {
+    const rows = enriched.filter((row) => row.comparable && row.currency === currency);
+    const cost = sumMoneyProducts(rows, 'amount', 'buyPrice');
+    const current = sumMoneyProducts(
+      rows.map((row) => ({ amount: row.amount, price: row.currentPrice })),
+      'amount',
+      'price'
+    );
+    groups.push({
+      currency,
+      cost,
+      current,
+      pl: roundMoney(current - cost),
+      count: rows.length,
+    });
+  }
+
+  const costByCurrency = {};
+  for (const row of enriched) {
+    costByCurrency[row.currency] = (costByCurrency[row.currency] || 0) + row.costValue;
+  }
+  for (const row of enriched) {
+    const base = costByCurrency[row.currency] || 0;
+    row.allocation = base > 0 ? (row.costValue / base) * 100 : 0;
+  }
+
+  return {
+    enriched,
+    groups,
+    excluded: enriched.filter((row) => !row.comparable).length,
+  };
+}
 
 export function calcDiversificationScore(enriched) {
   return calcDiversification(enriched).score;

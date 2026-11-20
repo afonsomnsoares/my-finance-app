@@ -34,9 +34,11 @@
 .sidebar__brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   padding: 0 8px 20px;
   flex-shrink: 0;
+  text-align: center;
 }
 
 .sidebar__wordmark {
@@ -77,6 +79,7 @@
   font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
+  text-align: center;
   color: var(--text-subtle);
 }
 
@@ -269,7 +272,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 230px;
+  min-width: min(230px, 100%);
+  flex: 1 1 160px;
+  max-width: 420px;
   padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: var(--r-full);
@@ -381,8 +386,9 @@
 .topbar__more:hover { background: var(--surface-4); color: var(--text); }
 
 .shell-content {
-  width: 100%;
-  padding: 28px;
+  width: min(100%, var(--content-max));
+  margin-inline: auto;
+  padding: 28px clamp(14px, 3vw, 28px);
 }
 
 .shell-overlay {

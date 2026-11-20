@@ -78,7 +78,7 @@ export default function Login() {
           </header>
 
           <div className="ui-card">
-              <form onSubmit={handleSubmit} noValidate>
+              <form className="form-stack" onSubmit={handleSubmit} noValidate>
                 <Field
                   label="Utilizador ou email"
                   name="username"
@@ -89,20 +89,18 @@ export default function Login() {
                   required
                 />
 
-                <div className="mt-3">
-                  <Field
-                    label="Password"
-                    type="password"
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
+                <Field
+                  label="Password"
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
 
                 {error && (
-                  <div className="ui-alert ui-alert--danger mt-3" role="alert" style={{ marginBottom: 0 }}>
+                  <div className="ui-alert ui-alert--danger" role="alert" style={{ marginBottom: 0 }}>
                     {error}
                   </div>
                 )}
@@ -111,7 +109,6 @@ export default function Login() {
                   type="submit"
                   variant="primary"
                   block
-                  className="mt-4"
                   disabled={submitting || !username || !password}
                   icon={<FiLogIn size={16} />}
                 >

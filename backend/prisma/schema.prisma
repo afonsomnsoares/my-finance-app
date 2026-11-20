@@ -18,15 +18,12 @@ model User {
   username             String        @unique
 
   password             String?
-  onboardingCompleted  Boolean       @default(false) @map("onboarding_completed")
   monthlyIncome        Decimal?      @map("monthly_income")
   currency             String        @default("EUR")
   financialGoal        String?       @map("financial_goal")
   monthlyExpenses      Decimal?      @map("monthly_expenses")
   fixedExpenses        Decimal?      @map("fixed_expenses")
   savingsTarget        Decimal?      @map("savings_target")
-  employmentStatus     String?       @map("employment_status")
-  budgetingExperience  String?       @map("budgeting_experience")
   createdAt            DateTime      @default(now()) @map("created_at")
   transactions         Transaction[]
   categoryBudgets      CategoryBudget[]
@@ -55,6 +52,7 @@ model Transaction {
   amount      Decimal
   category    String
   description String?
+  kind        String   @default("expense")
   date        DateTime @default(now())
 
   @@index([userId, date])

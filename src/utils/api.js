@@ -3,7 +3,6 @@ import axios from 'axios';
 export const API_URL = '';
 
 const CACHE_PREFIX = 'pf_cache_';
-const CACHE_TTL = 5 * 60 * 1000;
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -17,19 +16,9 @@ export function setUnauthenticatedHandler(handler) {
   onUnauthenticated = handler;
 }
 
-const CACHEABLE = ['/api/me', '/api/transactions', '/api/insights', '/api/investments', '/api/budgets'];
-
-const isCacheable = (url = '') => CACHEABLE.some((prefix) => url.startsWith(prefix));
-
 api.interceptors.response.use(
-  (response) => {
-    if (response.config.method === 'get' && isCacheable(response.config.url)) {
-      saveToCache(response.config.url, response.data);
-    }
-    return response;
-  },
+  (response) => response,
   (error) => {
-
     const status = error.response?.status;
     const isLoginAttempt = error.config?.url?.includes('/api/auth/login');
 
@@ -41,47 +30,10 @@ api.interceptors.response.use(
   }
 );
 
-export function saveToCache(url, data) {
-  try {
-    localStorage.setItem(CACHE_PREFIX + url, JSON.stringify({ data, timestamp: Date.now() }));
-  } catch {}
-}
-
-export function loadFromCache(url) {
-  try {
-    const raw = localStorage.getItem(CACHE_PREFIX + url);
-    if (!raw) return null;
-    const entry = JSON.parse(raw);
-    if (Date.now() - entry.timestamp > CACHE_TTL) {
-      localStorage.removeItem(CACHE_PREFIX + url);
-      return null;
-    }
-    return entry.data;
-  } catch {
-    return null;
-  }
-}
-
 export function clearCache() {
-
   Object.keys(localStorage)
-    .filter((key) => key.startsWith('pf_'))
+    .filter((key) => key.startsWith(CACHE_PREFIX))
     .forEach((key) => localStorage.removeItem(key));
-}
-
-export async function fetchWithCache(url) {
-  if (!navigator.onLine) {
-    const cached = loadFromCache(url);
-    if (cached) return cached;
-  }
-  try {
-    const { data } = await api.get(url);
-    return data;
-  } catch {
-    const cached = loadFromCache(url);
-    if (cached) return cached;
-    throw new Error('No data available offline.');
-  }
 }
 
 export const PERIOD_PRESETS = [

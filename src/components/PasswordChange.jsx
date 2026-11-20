@@ -96,7 +96,7 @@ export default function PasswordChange() {
           type="submit"
           variant="secondary"
           block
-          className="mt-4"
+          style={{ marginTop: 'var(--sp-5)' }}
           disabled={saving || !form.currentPassword || !form.newPassword || !form.confirm}
         >
           {saving ? 'A alterar…' : 'Alterar password'}

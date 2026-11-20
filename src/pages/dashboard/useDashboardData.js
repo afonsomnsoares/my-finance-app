@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getCurrencySymbol } from '../../utils/format';
+import { getCurrencySymbol, toLocalDateKey } from '../../utils/format';
 import { calcTrend } from '../../utils/analytics';
-import { api, loadFromCache } from '../../utils/api';
+import { api } from '../../utils/api';
 import { sumAmounts } from '../../utils/money';
 import { getMonthDays } from './helpers';
 
@@ -12,19 +12,22 @@ export function useDashboardData(offset = 0) {
     return new Date(now.getFullYear(), now.getMonth() - offset, 1);
   }, [offset]);
 
-  const [user, setUser] = useState(() => loadFromCache('/api/me') || null);
-  const [transactions, setTransactions] = useState(() => loadFromCache('/api/transactions') || []);
-  const [insights, setInsights] = useState(() => loadFromCache('/api/insights') || null);
+  const [user, setUser] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [insights, setInsights] = useState(null);
   const [truncated, setTruncated] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     if (!navigator.onLine) { setLoading(false); return; }
+    const from = new Date(reference.getFullYear(), reference.getMonth() - 1, 1);
+    const to = new Date(reference.getFullYear(), reference.getMonth() + 1, 0);
+    const params = new URLSearchParams({ from: toLocalDateKey(from), to: toLocalDateKey(to) });
     try {
       const [userRes, txRes, insRes] = await Promise.all([
         api.get('/api/me'),
-        api.get('/api/transactions'),
+        api.get(`/api/transactions?${params}`),
         api.get('/api/insights').catch(() => null),
       ]);
       setUser(userRes.data);
@@ -36,7 +39,7 @@ export function useDashboardData(offset = 0) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [reference]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -47,19 +50,27 @@ export function useDashboardData(offset = 0) {
     return d.getMonth() === ref.getMonth() && d.getFullYear() === ref.getFullYear();
   };
 
-  const monthTransactions = useMemo(
+  const inView = useMemo(
     () => transactions.filter((t) => inMonth(t.date, reference)),
     [transactions, reference]
   );
+  const monthTransactions = useMemo(
+    () => inView.filter((t) => t.kind !== 'income'),
+    [inView]
+  );
   const lastMonthTransactions = useMemo(() => {
     const prev = new Date(reference.getFullYear(), reference.getMonth() - 1, 1);
-    return transactions.filter((t) => inMonth(t.date, prev));
+    return transactions.filter((t) => inMonth(t.date, prev) && t.kind !== 'income');
   }, [transactions, reference]);
   const spentThisMonth = useMemo(() => sumAmounts(monthTransactions), [monthTransactions]);
   const spentLastMonth = useMemo(() => sumAmounts(lastMonthTransactions), [lastMonthTransactions]);
+  const incomeThisMonth = useMemo(
+    () => sumAmounts(inView.filter((t) => t.kind === 'income')),
+    [inView]
+  );
   const monthlyBudget = user?.monthlyExpenses || 0;
   const budgetUsedPercent = monthlyBudget > 0 ? Math.min(Math.round((spentThisMonth / monthlyBudget) * 100), 100) : 0;
-  const balance = (user?.monthlyIncome || 0) - spentThisMonth;
+  const balance = incomeThisMonth - spentThisMonth;
   const spendingTrend = calcTrend(spentThisMonth, spentLastMonth);
 
   const isCurrentMonth = offset === 0;
@@ -67,7 +78,7 @@ export function useDashboardData(offset = 0) {
     ? new Date().getDate()
     : new Date(reference.getFullYear(), reference.getMonth() + 1, 0).getDate();
   const avgDaily = spentThisMonth / Math.max(daysElapsed, 1);
-  const monthDays = useMemo(() => getMonthDays(transactions, reference), [transactions, reference]);
+  const monthDays = useMemo(() => getMonthDays(monthTransactions, reference), [monthTransactions, reference]);
   const maxDaily = Math.max(...monthDays.filter(d => !d.isFuture).map(d => d.total), 1);
   const hasTransactions = transactions.length > 0;
 
@@ -80,7 +91,7 @@ export function useDashboardData(offset = 0) {
   return {
     user, transactions, insights, truncated, error, loading, fetchData, reference, isCurrentMonth,
     symbol, monthTransactions, lastMonthTransactions,
-    spentThisMonth, spentLastMonth, monthlyBudget, budgetUsedPercent,
+    spentThisMonth, spentLastMonth, incomeThisMonth, monthlyBudget, budgetUsedPercent,
     balance, spendingTrend, avgDaily, monthDays, maxDaily,
     hasTransactions, recentTransactions,
   };

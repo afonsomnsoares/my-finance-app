@@ -7,10 +7,8 @@ export default function RequireAuth({ children }) {
 
   if (checking) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'var(--bg)' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">A verificar sessão…</span>
-        </div>
+      <div className="auth-gate">
+        <div className="auth-spinner" role="status" aria-label="A verificar sessão…" />
       </div>
     );
   }

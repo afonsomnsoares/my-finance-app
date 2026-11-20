@@ -128,9 +128,11 @@ export default function Expenses() {
 
   useEffect(() => { setPage(1); }, [preset, from, to, category, search, sortField, sortDirection]);
 
-  const total = sumAmounts(visible);
-  const activeDays = new Set(visible.map((t) => new Date(t.date).toDateString())).size;
-  const biggest = visible.reduce((max, tx) => (!max || tx.amount > max.amount ? tx : max), null);
+  const expenses = visible.filter((tx) => tx.kind !== 'income');
+  const income = sumAmounts(visible.filter((tx) => tx.kind === 'income'));
+  const total = sumAmounts(expenses);
+  const activeDays = new Set(expenses.map((t) => new Date(t.date).toDateString())).size;
+  const biggest = expenses.reduce((max, tx) => (!max || tx.amount > max.amount ? tx : max), null);
 
   const handleSort = (field) => {
     if (field === sortField) setSortDirection((d) => (d === 'asc' ? 'desc' : 'asc'));
@@ -174,13 +176,14 @@ export default function Expenses() {
           <span className="ui-eyebrow">Transações</span>
           <h1 className="page-title">Despesas</h1>
           <p className="page-subtitle">
-            {visible.length} {visible.length === 1 ? 'registo' : 'registos'} · {formatMoney(total, symbol)} no período
+            {visible.length} {visible.length === 1 ? 'movimento' : 'movimentos'} · {formatMoney(total, symbol)} gastos
+            {income > 0 && ` · ${formatMoney(income, symbol)} em entradas`}
           </p>
         </div>
         <div className="page-head__actions">
           <StatementImport symbol={symbol} onImported={fetchData} />
           <Button variant="primary" onClick={() => { setEditing(null); setShowModal(true); }} icon={<FiPlus size={15} />}>
-            Nova despesa
+            Novo movimento
           </Button>
         </div>
       </header>
@@ -261,7 +264,7 @@ export default function Expenses() {
       )}
 
       {showModal && (
-        <Modal title={editing ? 'Editar despesa' : 'Nova despesa'} onClose={closeModal} maxWidth={520}>
+        <Modal title={editing ? 'Editar movimento' : 'Novo movimento'} onClose={closeModal} maxWidth={520}>
           <ExpenseForm
             categories={categories}
             initialData={editing}

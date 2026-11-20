@@ -76,11 +76,14 @@ const login = z.object({
   password: z.string().min(1, 'Password is required.').max(200),
 });
 
+const movementKind = z.enum(['expense', 'income']).default('expense');
+
 const transactionCreate = z.object({
   amount: positiveMoney,
   category,
   description: optionalText(200),
   date: isoDate.optional(),
+  kind: movementKind,
 });
 
 const transactionUpdate = z.object({
@@ -88,6 +91,7 @@ const transactionUpdate = z.object({
   category: category.optional(),
   description: optionalText(200).nullable(),
   date: isoDate.optional(),
+  kind: z.enum(['expense', 'income']).optional(),
 }).refine((o) => Object.values(o).some((v) => v !== undefined), {
   message: 'Provide at least one field to update.',
 });
@@ -117,8 +121,6 @@ const profileUpdate = z.object({
   monthlyExpenses: optionalMoney,
   fixedExpenses: optionalMoney.nullable(),
   savingsTarget: optionalMoney.nullable(),
-  employmentStatus: optionalText(60).nullable(),
-  budgetingExperience: optionalText(60).nullable(),
 });
 
 const budgetsUpdate = z.object({
@@ -151,10 +153,6 @@ const reportQuery = z.object({
   month: z.coerce.number().int().min(1).max(12).optional(),
 });
 
-const exportQuery = reportQuery.extend({
-  format: z.enum(['csv', 'pdf']).default('csv'),
-});
-
 const marketQuotesQuery = z.object({
   symbols: symbolList(25).optional(),
 });
@@ -174,6 +172,6 @@ module.exports = {
   profileUpdate,
   budgetsUpdate,
   investmentCreate, investmentUpdate,
-  reportQuery, exportQuery,
+  reportQuery,
   marketQuotesQuery, marketPricesQuery, marketSearchQuery,
 };

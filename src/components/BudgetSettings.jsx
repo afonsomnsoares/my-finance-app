@@ -141,7 +141,7 @@ export default function BudgetSettings({ symbol }) {
       <Button
         variant="secondary"
         block
-        className="mt-4"
+        style={{ marginTop: 'var(--sp-5)' }}
         onClick={handleSave}
         disabled={saving}
         icon={<FiSave size={15} />}

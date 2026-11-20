@@ -85,26 +85,28 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
     return res.status(400).json({ error: 'Não foi possível ler este PDF.' });
   }
 
-  const { expenses, incoming } = parseStatement(items);
-  if (expenses.length === 0) {
+  const { expenses, income } = parseStatement(items);
+  const movements = [
+    ...expenses.map((row) => ({ ...row, kind: 'expense' })),
+    ...income.map((row) => ({ ...row, kind: 'income' })),
+  ];
+  if (movements.length === 0) {
     return res.status(422).json({
-      error: incoming > 0
-        ? 'Este PDF só tem entradas de dinheiro, e a aplicação guarda despesas.'
-        : 'Não encontrei movimentos. Na app Santander, em Contas, descarrega o PDF junto à lista de movimentos.',
-      skippedIncoming: incoming,
+      error: 'Não encontrei movimentos. Na app Santander, em Contas, descarrega o PDF junto à lista de movimentos.',
     });
   }
-  if (expenses.length > 400) {
+  if (movements.length > 400) {
     return res.status(422).json({ error: 'Este extrato tem demasiados movimentos para importar de uma vez.' });
   }
 
   const validated = [];
-  for (const expense of expenses) {
+  for (const movement of movements) {
     const parsed = schemas.transactionCreate.safeParse({
-      amount: expense.amount,
-      category: expense.category,
-      description: expense.description,
-      date: `${expense.date}T00:00:00.000Z`,
+      amount: movement.amount,
+      category: movement.category,
+      description: movement.description,
+      date: `${movement.date}T00:00:00.000Z`,
+      kind: movement.kind,
     });
     if (!parsed.success) {
       return res.status(422).json({
@@ -115,7 +117,8 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
       amount: parsed.data.amount,
       category: parsed.data.category,
       description: parsed.data.description ?? null,
-      date: expense.date,
+      date: movement.date,
+      kind: parsed.data.kind,
     });
   }
 
@@ -127,13 +130,13 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
       where: scopeToUser(req, {
         date: { gte: new Date(Math.min(...dates)), lte: endOfLocalDay(new Date(Math.max(...dates))) },
       }),
-      select: { date: true, amount: true, description: true },
+      select: { date: true, amount: true, description: true, kind: true },
     });
-    const known = new Set(existing.map((row) => movementKey(row.date, Number(row.amount), row.description)));
+    const known = new Set(existing.map((row) => movementKey(row.date, Number(row.amount), row.description, row.kind)));
 
     const toCreate = [];
     for (const expense of validated) {
-      const key = movementKey(expense.date, expense.amount, expense.description);
+      const key = movementKey(expense.date, expense.amount, expense.description, expense.kind);
       if (known.has(key)) continue;
       known.add(key);
       toCreate.push(expense);
@@ -146,6 +149,7 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
           amount: expense.amount,
           category: expense.category,
           description: expense.description,
+          kind: expense.kind,
           date: new Date(`${expense.date}T00:00:00.000Z`),
         })),
       });
@@ -155,16 +159,18 @@ router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
 
   res.json({
     created: fresh.length,
+    createdExpenses: fresh.filter((row) => row.kind !== 'income').length,
+    createdIncome: fresh.filter((row) => row.kind === 'income').length,
     skippedDuplicates: validated.length - fresh.length,
-    skippedIncoming: incoming,
     expenses: fresh,
   });
 }));
 
-function movementKey(date, amount, description) {
+function movementKey(date, amount, description, kind = 'expense') {
   const day = typeof date === 'string' ? date : localDateKey(date);
   const text = String(description || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
-  return `${day}|${Number(amount).toFixed(2)}|${text}`;
+  const base = `${day}|${Number(amount).toFixed(2)}|${text}`;
+  return kind === 'income' ? `${base}|income` : base;
 }
 
 router.post('/', writeLimiter, validate({ body: schemas.transactionCreate }), ah(async (req, res) => {

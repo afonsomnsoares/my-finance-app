@@ -11,6 +11,23 @@ function sumAmounts(rows) {
   return cents / 100;
 }
 
+function isIncome(row) {
+  return row?.kind === 'income';
+}
+
+function sumExpenses(rows) {
+  return sumAmounts(rows.filter((row) => !isIncome(row)));
+}
+
+function sumIncome(rows) {
+  return sumAmounts(rows.filter(isIncome));
+}
+
+function savingsRate(income, spent) {
+  if (!(income > 0)) return 0;
+  return Math.round(((income - spent) / income) * 100);
+}
+
 function totalsByCategory(rows) {
   const cents = {};
   for (const row of rows) {
@@ -23,4 +40,6 @@ function totalsByCategory(rows) {
   return totals;
 }
 
-module.exports = { roundMoney, sumAmounts, totalsByCategory, toCents };
+module.exports = {
+  roundMoney, sumAmounts, sumExpenses, sumIncome, savingsRate, totalsByCategory, toCents, isIncome,
+};

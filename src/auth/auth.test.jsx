@@ -132,13 +132,15 @@ describe('login form', () => {
 });
 
 describe('cached data', () => {
-  test('a 401 from any request clears locally cached financial data', async () => {
-    const { clearCache, saveToCache, loadFromCache } = await import('../utils/api');
+  test('clearCache removes leftover ledger copies and leaves other keys', async () => {
+    const { clearCache } = await import('../utils/api');
 
-    saveToCache('/api/transactions', [{ id: 1, amount: 42 }]);
-    expect(loadFromCache('/api/transactions')).toEqual([{ id: 1, amount: 42 }]);
+    localStorage.setItem('pf_cache_/api/transactions', '{"data":[]}');
+    localStorage.setItem('pf_invest_goal', '1000');
 
     clearCache();
-    expect(loadFromCache('/api/transactions')).toBeNull();
+
+    expect(localStorage.getItem('pf_cache_/api/transactions')).toBeNull();
+    expect(localStorage.getItem('pf_invest_goal')).toBe('1000');
   });
 });

@@ -50,7 +50,7 @@ test('positioned columns separate the amount from the balance', () => {
   }]);
 });
 
-test('a Santander-style PDF becomes expenses and drops money coming in', async () => {
+test('a Santander-style PDF keeps expenses and salary as income', async () => {
   const buffer = await pdfBuffer((doc) => {
     doc.fontSize(10);
     const row = (y, cells) => {
@@ -67,6 +67,9 @@ test('a Santander-style PDF becomes expenses and drops money coming in', async (
 
   const parsed = parseStatement(await extractPdfItems(buffer));
   assert.equal(parsed.incoming, 1);
+  assert.equal(parsed.income.length, 1);
+  assert.equal(parsed.income[0].category, 'Rendimento');
+  assert.equal(parsed.income[0].amount, 1500);
   assert.equal(parsed.expenses.length, 2);
   assert.equal(parsed.expenses[0].category, 'Alimentação');
   assert.equal(parsed.expenses[0].amount, 12.4);

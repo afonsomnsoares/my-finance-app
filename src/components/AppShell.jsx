@@ -14,12 +14,19 @@ const PRIMARY = [
 
 const TRANSACTIONS = [
   { to: '/app/expenses', label: 'Todas as transações' },
-  { to: '/app/expenses?new=1', label: 'Nova despesa' },
+  { to: '/app/expenses?new=1', label: 'Nova transação' },
 ];
 
 const MANAGEMENT = [
   { to: '/app/investments', label: 'Investimentos', Icon: FiTrendingUp },
   { to: '/app/reports', label: 'Relatórios', Icon: FiFileText },
+];
+
+const SETTINGS = [
+  { to: '/app/profile#conta', label: 'Conta' },
+  { to: '/app/profile#banco', label: 'Banco' },
+  { to: '/app/profile#orcamentos', label: 'Orçamentos' },
+  { to: '/app/profile#seguranca', label: 'Segurança' },
 ];
 
 const CRUMBS = {
@@ -28,7 +35,7 @@ const CRUMBS = {
   '/app/analytics': 'Análises',
   '/app/investments': 'Investimentos',
   '/app/reports': 'Relatórios',
-  '/app/profile': 'Perfil',
+  '/app/profile': 'Definições',
 };
 
 function initials(user) {
@@ -40,19 +47,29 @@ function initials(user) {
 
 export default function AppShell({ children }) {
   const { user, logout } = useAuth();
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const navigate = useNavigate();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [txOpen, setTxOpen] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(pathname === '/app/profile');
   const [term, setTerm] = useState('');
 
   useEffect(() => {
     setMenuOpen(false);
+    if (pathname === '/app/profile') setSettingsOpen(true);
   }, [pathname]);
+
+  useEffect(() => {
+    if (pathname !== '/app/profile' || !hash) return;
+    requestAnimationFrame(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [pathname, hash]);
 
   const crumb = CRUMBS[pathname] || 'Visão geral';
   const onExpenses = pathname === '/app/expenses';
+  const onSettings = pathname === '/app/profile';
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -129,11 +146,36 @@ export default function AppShell({ children }) {
             ))}
 
             <span className="sidebar__section">Conta</span>
-            <Link to="/app/profile" className={linkClass('/app/profile')} aria-current={pathname === '/app/profile' ? 'page' : undefined}>
+            <button
+              type="button"
+              className={`sidebar__link${onSettings ? ' sidebar__link--active' : ''}`}
+              onClick={() => setSettingsOpen((open) => !open)}
+              aria-expanded={settingsOpen}
+            >
               <FiSettings size={17} aria-hidden="true" />
               <span>Definições</span>
-              <span className="sidebar__dot" aria-hidden="true" />
-            </Link>
+              <FiChevronDown size={14} className={`sidebar__chevron${settingsOpen ? ' sidebar__chevron--open' : ''}`} aria-hidden="true" />
+            </button>
+
+            {settingsOpen && (
+              <div className="sidebar__sub">
+                {SETTINGS.map(({ to, label }) => {
+                  const itemHash = to.includes('#') ? to.slice(to.indexOf('#')) : '';
+                  const active = onSettings && (
+                    itemHash ? hash === itemHash : !hash || hash === '#conta'
+                  );
+                  return (
+                    <Link
+                      key={label}
+                      to={to}
+                      className={`sidebar__sublink${active ? ' sidebar__sublink--active' : ''}`}
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </nav>
 
           <div className="sidebar__user">

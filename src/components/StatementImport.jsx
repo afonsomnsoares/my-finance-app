@@ -5,7 +5,7 @@ import { api } from '../utils/api';
 import { formatDate, formatMoney } from '../utils/format';
 import { Button, Field, Modal } from './ui';
 
-export default function StatementImport({ symbol, onImported }) {
+export default function StatementImport({ symbol, onImported, variant = 'secondary', label }) {
   const inputRef = useRef(null);
   const fileRef = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -25,7 +25,7 @@ export default function StatementImport({ symbol, onImported }) {
       setNeedPassword(false);
       setPassword('');
       setResult(data);
-      if (data.created > 0 || data.createdIncome > 0) onImported();
+      if (data.created > 0 || data.createdIncome > 0) onImported?.();
     } catch (err) {
       const code = err.response?.data?.code;
       const message = err.response?.data?.error || 'Não foi possível importar o extrato.';
@@ -58,30 +58,31 @@ export default function StatementImport({ symbol, onImported }) {
       <input
         ref={inputRef}
         type="file"
-        accept="application/pdf,.pdf"
+        accept="application/pdf,.pdf,text/csv,.csv,text/plain"
         hidden
         onChange={onFile}
       />
       <Button
-        variant="secondary"
+        variant={variant}
         onClick={() => inputRef.current?.click()}
         disabled={busy}
         icon={<FiUpload size={15} />}
       >
-        {busy ? 'A ler o extrato…' : 'Importar extrato'}
+        {busy ? 'A ler o extrato…' : (label || 'Importar extrato')}
       </Button>
 
       {(needPassword || (error && !result)) && (
         <Modal title="Importar extrato" onClose={close} maxWidth={440}>
           {needPassword ? (
             <form
+              className="form-stack"
               onSubmit={(event) => {
                 event.preventDefault();
                 if (fileRef.current) send(fileRef.current, password);
               }}
             >
-              <p className="ui-card__subtitle" style={{ marginBottom: 'var(--sp-4)' }}>
-                O Santander protegeu este PDF. A palavra-passe fica só neste pedido e não é guardada.
+              <p className="ui-card__subtitle">
+                O banco protegeu este PDF. A palavra-passe fica só neste pedido e não é guardada.
               </p>
               <Field
                 label="Palavra-passe do PDF"
@@ -91,18 +92,18 @@ export default function StatementImport({ symbol, onImported }) {
                 autoComplete="off"
                 required
               />
-              {error && <div className="ui-alert ui-alert--danger" role="alert" style={{ marginTop: 'var(--sp-4)' }}>{error}</div>}
-              <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-5)' }}>
+              {error && <div className="ui-alert ui-alert--danger" role="alert">{error}</div>}
+              <div className="form-actions">
+                <Button type="button" variant="ghost" onClick={close}>Cancelar</Button>
                 <Button type="submit" variant="primary" disabled={busy || !password}>
                   {busy ? 'A ler…' : 'Importar'}
                 </Button>
-                <Button type="button" variant="ghost" onClick={close}>Cancelar</Button>
               </div>
             </form>
           ) : (
             <>
               <div className="ui-alert ui-alert--danger" role="alert">{error}</div>
-              <div style={{ marginTop: 'var(--sp-4)' }}>
+              <div className="form-actions">
                 <Button variant="primary" onClick={close}>Fechar</Button>
               </div>
             </>
@@ -116,14 +117,15 @@ export default function StatementImport({ symbol, onImported }) {
             {result.createdExpenses ?? result.created} despesas e {result.createdIncome || 0} entradas criadas.
             {result.skippedDuplicates > 0 && ` ${result.skippedDuplicates} já existiam e ficaram de fora.`}
           </p>
-          {result.expenses.length > 0 && (
+          {result.expenses?.length > 0 && (
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 'var(--sp-2)', maxHeight: 320, overflow: 'auto' }}>
               {result.expenses.map((expense) => (
-                <li key={`${expense.date}-${expense.amount}-${expense.description}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--sp-3)', fontSize: 'var(--fs-sm)' }}>
+                <li key={`${expense.date}-${expense.amount}-${expense.description}-${expense.kind || 'expense'}`} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--sp-3)', fontSize: 'var(--fs-sm)' }}>
                   <span>
                     <strong>{expense.description}</strong>
                     <span style={{ display: 'block', color: 'var(--text-muted)' }}>
                       {formatDate(`${expense.date}T00:00:00.000Z`, 'full')} · {expense.category}
+                      {expense.kind === 'income' ? ' · Entrada' : ''}
                     </span>
                   </span>
                   <span>{formatMoney(expense.amount, symbol)}</span>
@@ -131,7 +133,7 @@ export default function StatementImport({ symbol, onImported }) {
               ))}
             </ul>
           )}
-          <div style={{ marginTop: 'var(--sp-5)' }}>
+          <div className="form-actions">
             <Button variant="primary" onClick={close}>Fechar</Button>
           </div>
         </Modal>

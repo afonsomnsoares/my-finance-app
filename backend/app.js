@@ -33,7 +33,9 @@ app.use(helmet({
     ? {
       directives: {
         ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-        'style-src': ["'self'", 'https://fonts.googleapis.com'],
+        // React sets many style="" attributes; block those and charts/layout break in production.
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        'style-src-attr': ["'unsafe-inline'"],
         'font-src': ["'self'", 'https://fonts.gstatic.com'],
         'img-src': ["'self'", 'data:'],
       },

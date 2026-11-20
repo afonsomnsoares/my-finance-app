@@ -8,7 +8,7 @@ const { scopeToUser } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { writeLimiter } = require('../middleware/rateLimit');
 const schemas = require('../schemas');
-const { parseStatement } = require('../lib/statement');
+const { parseStatement, parseCsvStatement } = require('../lib/statement');
 const { extractPdfItems } = require('../lib/pdfText');
 const ah = require('./asyncHandler');
 
@@ -17,14 +17,27 @@ const upload = multer({
   limits: { fileSize: 8 * 1024 * 1024, files: 1 },
 });
 
-function receivePdf(req, res, next) {
+function receiveStatement(req, res, next) {
   upload.single('file')(req, res, (error) => {
     if (!error) return next();
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(413).json({ error: 'O PDF é demasiado grande. O máximo é 8 MB.' });
+      return res.status(413).json({ error: 'O ficheiro é demasiado grande. O máximo é 8 MB.' });
     }
     return res.status(400).json({ error: 'Não foi possível ler o ficheiro.' });
   });
+}
+
+function looksLikePdf(buffer) {
+  return Buffer.isBuffer(buffer) && buffer.length >= 5 && buffer.subarray(0, 5).toString('latin1') === '%PDF-';
+}
+
+function looksLikeCsv(file) {
+  const name = String(file?.originalname || '').toLowerCase();
+  const type = String(file?.mimetype || '').toLowerCase();
+  return name.endsWith('.csv')
+    || type.includes('csv')
+    || type === 'text/plain'
+    || type === 'application/vnd.ms-excel';
 }
 
 const router = express.Router();
@@ -50,42 +63,57 @@ router.get('/', validate({ query: schemas.transactionQuery }), ah(async (req, re
   res.json(plain(rows));
 }));
 
-router.post('/import', writeLimiter, receivePdf, ah(async (req, res) => {
+router.post('/import', writeLimiter, receiveStatement, ah(async (req, res) => {
   const file = req.file;
   if (!file || !Buffer.isBuffer(file.buffer) || file.buffer.length < 5) {
-    return res.status(400).json({ error: 'Escolhe o PDF da lista de movimentos.' });
-  }
-  if (file.buffer.subarray(0, 5).toString('latin1') !== '%PDF-') {
-    return res.status(400).json({ error: 'O ficheiro tem de ser um PDF.' });
+    return res.status(400).json({ error: 'Escolhe o PDF ou CSV da lista de movimentos.' });
   }
 
-  const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 100) : '';
-  let items;
-  try {
-    items = await extractPdfItems(file.buffer, password);
-  } catch (error) {
-    if (error.code === 'password_required') {
-      return res.status(400).json({
-        error: 'Este PDF pede uma palavra-passe.',
-        code: 'password_required',
-      });
-    }
-    if (error.code === 'password_incorrect') {
-      return res.status(400).json({
-        error: 'A palavra-passe do PDF está incorreta.',
-        code: 'password_incorrect',
-      });
-    }
-    if (error.code === 'pdf_too_large') {
-      return res.status(422).json({
-        error: 'Este PDF tem demasiadas páginas. O máximo é 50.',
-        code: 'pdf_too_large',
-      });
-    }
-    return res.status(400).json({ error: 'Não foi possível ler este PDF.' });
-  }
+  let expenses;
+  let income;
 
-  const { expenses, income } = parseStatement(items);
+  if (looksLikePdf(file.buffer)) {
+    const password = typeof req.body?.password === 'string' ? req.body.password.slice(0, 100) : '';
+    let items;
+    try {
+      items = await extractPdfItems(file.buffer, password);
+    } catch (error) {
+      if (error.code === 'password_required') {
+        return res.status(400).json({
+          error: 'Este PDF pede uma palavra-passe.',
+          code: 'password_required',
+        });
+      }
+      if (error.code === 'password_incorrect') {
+        return res.status(400).json({
+          error: 'A palavra-passe do PDF está incorreta.',
+          code: 'password_incorrect',
+        });
+      }
+      if (error.code === 'pdf_too_large') {
+        return res.status(422).json({
+          error: 'Este PDF tem demasiadas páginas. O máximo é 50.',
+          code: 'pdf_too_large',
+        });
+      }
+      return res.status(400).json({ error: 'Não foi possível ler este PDF.' });
+    }
+    ({ expenses, income } = parseStatement(items));
+  } else if (looksLikeCsv(file)) {
+    try {
+      ({ expenses, income } = parseCsvStatement(file.buffer.toString('utf8')));
+    } catch (error) {
+      if (error.code === 'csv_header') {
+        return res.status(422).json({
+          error: 'Não reconheci as colunas deste CSV. Usa cabeçalhos como Data, Descrição e Montante (ou Débito/Crédito).',
+          code: 'csv_header',
+        });
+      }
+      return res.status(400).json({ error: 'Não foi possível ler este CSV.' });
+    }
+  } else {
+    return res.status(400).json({ error: 'O ficheiro tem de ser um PDF ou CSV do banco.' });
+  }
   const movements = [
     ...expenses.map((row) => ({ ...row, kind: 'expense' })),
     ...income.map((row) => ({ ...row, kind: 'income' })),

@@ -6,11 +6,11 @@ import { useAuth } from '../auth/AuthContext';
 
 const LINKS = [
   { to: '/app', label: 'Painel', Icon: FiGrid },
-  { to: '/app/expenses', label: 'Despesas', Icon: FiDollarSign },
+  { to: '/app/expenses', label: 'Transações', Icon: FiDollarSign },
   { to: '/app/analytics', label: 'Análises', Icon: FiBarChart2 },
   { to: '/app/investments', label: 'Investimentos', Icon: FiTrendingUp },
   { to: '/app/reports', label: 'Relatórios', Icon: FiFileText },
-  { to: '/app/profile', label: 'Perfil', Icon: FiUser },
+  { to: '/app/profile', label: 'Definições', Icon: FiUser },
 ];
 
 export default function DashboardNavbar() {

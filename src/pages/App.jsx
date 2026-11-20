@@ -19,6 +19,7 @@ import SavingsProjector from './dashboard/SavingsProjector';
 import RecentTransactions from './dashboard/RecentTransactions';
 import EmptyState from './dashboard/EmptyState';
 import QuickAddModal from './dashboard/QuickAddModal';
+import MarketTicker from './dashboard/MarketTicker';
 import { useDashboardData } from './dashboard/useDashboardData';
 import { formatMonthYear, formatMoney, formatPercent } from '../utils/format';
 import { addMoney } from '../utils/money';
@@ -120,7 +121,7 @@ export default function AppPage() {
           </div>
 
           <Button variant="primary" onClick={() => setShowQuickAdd(true)} icon={<FiPlus size={15} />}>
-            Nova despesa
+            Nova transação
           </Button>
         </div>
       </header>
@@ -129,6 +130,13 @@ export default function AppPage() {
         <EmptyState onAdd={() => setShowQuickAdd(true)} />
       ) : (
         <>
+          {income <= 0 && (
+            <div className="ui-alert ui-alert--warning" role="status" style={{ marginBottom: 'var(--sp-4)' }}>
+              Ainda não há entradas este mês. O saldo só usa salário e outras entradas registadas —
+              adiciona uma Entrada (ou importa o extrato) para ver o rendimento real.
+            </div>
+          )}
+
           <div className="stat-grid">
             <MetricCard
               label="Saldo"
@@ -137,7 +145,9 @@ export default function AppPage() {
               accent="orange"
               badge={trendBadge}
               badgeTone={trendTone}
-              hint="Entradas registadas menos despesas"
+              hint={income > 0
+                ? 'Entradas registadas menos despesas'
+                : 'Negativo porque ainda não registaste entradas este mês'}
             >
               <Sparkline values={balanceSeries} color="var(--orange)" />
             </MetricCard>
@@ -147,9 +157,11 @@ export default function AppPage() {
               value={formatMoney(income, symbol)}
               icon={<FiCalendar size={16} />}
               accent="blue"
-              hint={monthlyBudget > 0
-                ? `Orçamento definido: ${formatMoney(monthlyBudget, symbol)}`
-                : 'Define um orçamento no perfil'}
+              hint={income > 0
+                ? (monthlyBudget > 0
+                  ? `Orçamento mensal: ${formatMoney(monthlyBudget, symbol)}`
+                  : 'Salário e outras entradas registadas')
+                : '€0 — regista o salário como Entrada (ou importa o extrato)'}
             >
               <MiniBars values={[income, monthlyBudget, spentThisMonth]} color="var(--accent)" />
             </MetricCard>
@@ -197,6 +209,9 @@ export default function AppPage() {
             </div>
 
             <div className="section-bar__actions">
+              <Link to="/app/profile#banco" className="pill">
+                Importar banco
+              </Link>
               <Link to="/app/expenses" className="pill">
                 <FiFilter size={13} /> Filtrar
               </Link>
@@ -234,6 +249,8 @@ export default function AppPage() {
           <div id="transacoes">
             <RecentTransactions transactions={recentTransactions} symbol={symbol} />
           </div>
+
+          <MarketTicker />
         </>
       )}
 

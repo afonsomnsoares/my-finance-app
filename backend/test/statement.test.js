@@ -86,3 +86,18 @@ test('a password-protected PDF is rejected until the password is given', async (
   const items = await extractPdfItems(buffer, 'segredo');
   assert.ok(items.some((item) => item.str.includes('Data')));
 });
+
+test('CSV with Data/Descrição/Montante imports expenses and salary', () => {
+  const { parseCsvStatement } = require('../lib/statement');
+  const csv = [
+    'Data;Descrição;Montante;Saldo',
+    '01-11-2026;COMPRA CONTINENTE;-12,40;1000,00',
+    '03-11-2026;ORDENADO NOVEMBRO;1500,00;2492,00',
+  ].join('\n');
+  const parsed = parseCsvStatement(csv);
+  assert.equal(parsed.incoming, 1);
+  assert.equal(parsed.income[0].amount, 1500);
+  assert.equal(parsed.expenses.length, 1);
+  assert.equal(parsed.expenses[0].amount, 12.4);
+  assert.equal(parsed.expenses[0].category, 'Alimentação');
+});

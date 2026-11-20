@@ -187,10 +187,7 @@ function parseFlat(lines) {
   return movements;
 }
 
-function parseStatement(items) {
-  const lines = groupLines(items);
-  const header = findHeader(lines);
-  const movements = header ? parsePositioned(lines, header) : parseFlat(lines);
+function finalizeMovements(movements) {
   const seen = new Set();
   const unique = [];
   for (const movement of movements) {
@@ -210,4 +207,86 @@ function parseStatement(items) {
   };
 }
 
-module.exports = { parseStatement, categorize, parseEuro, fold };
+function parseStatement(items) {
+  const lines = groupLines(items);
+  const header = findHeader(lines);
+  const movements = header ? parsePositioned(lines, header) : parseFlat(lines);
+  return finalizeMovements(movements);
+}
+
+function splitCsvLine(line, delimiter) {
+  const cells = [];
+  let current = '';
+  let inQuotes = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    if (char === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (char === delimiter && !inQuotes) {
+      cells.push(current.trim());
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  cells.push(current.trim());
+  return cells;
+}
+
+function detectCsvDelimiter(headerLine) {
+  const commas = (headerLine.match(/,/g) || []).length;
+  const semis = (headerLine.match(/;/g) || []).length;
+  return semis >= commas ? ';' : ',';
+}
+
+function parseCsvStatement(text) {
+  const raw = String(text || '').replace(/^\uFEFF/, '').trim();
+  if (!raw) return finalizeMovements([]);
+  const lines = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length < 2) return finalizeMovements([]);
+
+  const delimiter = detectCsvDelimiter(lines[0]);
+  const headers = splitCsvLine(lines[0], delimiter).map((cell) => columnRole(cell));
+  const dateIndex = headers.findIndex((role) => role === 'date' || role === 'valueDate');
+  const descriptionIndex = headers.findIndex((role) => role === 'description');
+  const amountIndex = headers.findIndex((role) => role === 'amount');
+  const debitIndex = headers.findIndex((role) => role === 'debit');
+  const creditIndex = headers.findIndex((role) => role === 'credit');
+
+  const hasMoney = amountIndex >= 0 || debitIndex >= 0 || creditIndex >= 0;
+  if (dateIndex < 0 || descriptionIndex < 0 || !hasMoney) {
+    const error = new Error('CSV header not recognised.');
+    error.code = 'csv_header';
+    throw error;
+  }
+
+  const movements = [];
+  for (const line of lines.slice(1)) {
+    const cells = splitCsvLine(line, delimiter);
+    const dateText = cells[dateIndex] || '';
+    const description = cells[descriptionIndex] || '';
+    const debit = debitIndex >= 0 ? parseEuro(cells[debitIndex]) : null;
+    const credit = creditIndex >= 0 ? parseEuro(cells[creditIndex]) : null;
+    const amount = amountIndex >= 0 ? parseEuro(cells[amountIndex]) : null;
+
+    let signed = null;
+    if (debit) signed = -Math.abs(debit);
+    else if (credit) signed = Math.abs(credit);
+    else if (amount != null) signed = amount;
+
+    const movement = movementFromCells(dateText, description, signed);
+    if (!movement) continue;
+    movement.category = categorize(movement.description);
+    movements.push(movement);
+  }
+  return finalizeMovements(movements);
+}
+
+module.exports = { parseStatement, parseCsvStatement, categorize, parseEuro, fold };

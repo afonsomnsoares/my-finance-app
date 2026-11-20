@@ -173,8 +173,8 @@ export default function Expenses() {
       )}
       <header className="page-head">
         <div>
-          <span className="ui-eyebrow">Transações</span>
-          <h1 className="page-title">Despesas</h1>
+          <span className="ui-eyebrow">Ledger</span>
+          <h1 className="page-title">Transações</h1>
           <p className="page-subtitle">
             {visible.length} {visible.length === 1 ? 'movimento' : 'movimentos'} · {formatMoney(total, symbol)} gastos
             {income > 0 && ` · ${formatMoney(income, symbol)} em entradas`}

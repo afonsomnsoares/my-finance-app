@@ -14,8 +14,8 @@ function NotFound() {
     <div className="login-page login-page--center">
       <div className="ui-card" style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
         <span className="ui-eyebrow">Erro 404</span>
-        <h1 className="page-title" style={{ fontSize: 'var(--fs-3xl)' }}>Página não encontrada</h1>
-        <p className="page-subtitle" style={{ marginBottom: 'var(--sp-5)' }}>
+        <h1 className="page-title">Página não encontrada</h1>
+        <p className="page-subtitle" style={{ marginBottom: 'var(--sp-5)', marginInline: 'auto' }}>
           O endereço que abriste não existe nesta aplicação.
         </p>
         <Link to="/app" className="ui-btn ui-btn--primary ui-btn--block">Voltar ao painel</Link>

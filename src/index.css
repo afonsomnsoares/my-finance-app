@@ -20,6 +20,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg);
+  background-image: var(--bg-glow);
+  background-attachment: fixed;
   color: var(--text);
   overflow-x: clip;
   font-size: var(--fs-base);
@@ -39,6 +41,20 @@ code {
 h1, h2, h3, h4, h5, h6 {
   color: var(--text);
   letter-spacing: var(--tracking-tight);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.04em;
+}
+
+.num,
+.tabular,
+.metric-card__value,
+.ui-stat__value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
 a { color: var(--accent-hover); }

@@ -44,9 +44,9 @@ export default function Investments() {
     <AppShell>
       <header className="page-head">
         <div>
-          <span className="ui-eyebrow">Carteira</span>
-          <h1 className="page-title">
-            {hasLivePrices ? formatMoney(totalCurrent, symbol) : '—'}
+          <span className="ui-eyebrow">Mercados</span>
+          <h1 className="page-title display">
+            {hasLivePrices ? formatMoney(totalCurrent, symbol) : 'Carteira'}
           </h1>
           {investments.length > 0 && (
             <p className="page-subtitle">

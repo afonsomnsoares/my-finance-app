@@ -97,12 +97,12 @@ export default function Analytics() {
       )}
       <header className="page-head">
         <div>
-          <span className="ui-eyebrow">Análises</span>
+          <span className="ui-eyebrow">Tendências</span>
           <h1 className="page-title">Análises</h1>
           <p className="page-subtitle">
             {monthsWithData > 0
-              ? `${formatMoney(windowTotal, symbol)} em ${monthsWithData} ${monthsWithData === 1 ? 'mês' : 'meses'} com registos`
-              : 'Sem registos neste período'}
+              ? `${formatMoney(windowTotal, symbol)} gastos em ${monthsWithData} ${monthsWithData === 1 ? 'mês' : 'meses'} — médias e categorias`
+              : 'Sem registos neste período. Adiciona movimentos para ver tendências.'}
           </p>
         </div>
         <div className="page-head__actions">

@@ -1,24 +1,54 @@
 import { roundMoney, sumMoneyProducts, sumNumbers } from '../../utils/money';
 
+const PENCE = new Set(['GBp', 'GBX']);
+
+export function normalizeMarketCurrency(currency, price) {
+  const code = String(currency || '');
+  if (PENCE.has(code)) {
+    return {
+      currency: 'GBP',
+      price: price == null ? null : Number(price) / 100,
+    };
+  }
+  return {
+    currency: code || null,
+    price: price == null ? null : Number(price),
+  };
+}
+
+export function findQuote(prices, symbol) {
+  if (!prices || !symbol) return null;
+  const key = String(symbol);
+  return prices[key]
+    || prices[key.toUpperCase()]
+    || prices[key.toLowerCase()]
+    || null;
+}
+
 export function portfolioView(investments, prices) {
   const enriched = investments.map((inv) => {
-    const quote = prices[inv.name];
-    const comparable = quote?.price != null && quote.currency === inv.currency;
+    const raw = findQuote(prices, inv.name);
+    const normalized = raw
+      ? normalizeMarketCurrency(raw.currency, raw.price)
+      : { currency: null, price: null };
+    const comparable = normalized.price != null
+      && Number.isFinite(normalized.price)
+      && normalized.currency === inv.currency;
     const costValue = roundMoney(inv.amount * inv.buyPrice);
-    const currentPrice = comparable ? quote.price : null;
+    const currentPrice = comparable ? normalized.price : null;
     const currentValue = currentPrice != null ? roundMoney(inv.amount * currentPrice) : null;
     const pl = currentValue != null ? roundMoney(currentValue - costValue) : null;
     const plPercent = pl != null && costValue > 0 ? (pl / costValue) * 100 : null;
     return {
       ...inv,
       comparable,
-      quoteCurrency: quote?.currency || null,
+      quoteCurrency: normalized.currency,
       currentPrice,
       currentValue,
       costValue,
       pl,
       plPercent,
-      dailyChange: quote?.changePercent,
+      dailyChange: raw?.changePercent,
     };
   });
 

@@ -175,7 +175,12 @@ export function useInvestments() {
     e.preventDefault();
     setError('');
     try {
-      const payload = { ...form, amount: parseFloat(form.amount), buyPrice: parseFloat(form.buyPrice) };
+      const payload = {
+        ...form,
+        name: String(form.name || '').trim().toUpperCase(),
+        amount: parseFloat(form.amount),
+        buyPrice: parseFloat(form.buyPrice),
+      };
       let next;
       if (editing) {
         const { data } = await api.put(`/api/investments/${editing.id}`, payload);
@@ -204,16 +209,23 @@ export function useInvestments() {
   };
 
   const handleSelectSuggestion = async (item) => {
-    setSelectedSuggestion(item);
-    setForm(prev => ({ ...prev, name: item.symbol, type: item.type }));
+    const symbol = String(item.symbol || '').toUpperCase();
+    setSelectedSuggestion({ ...item, symbol });
+    setForm((prev) => ({ ...prev, name: symbol, type: item.type }));
     setShowDropdown(false);
     setSearchResults([]);
     try {
-      const { data } = await api.get(`/api/market/prices?symbols=${item.symbol}`);
-      const quote = data?.[item.symbol];
-      if (quote?.price) {
-        setForm(prev => ({ ...prev, name: item.symbol, type: item.type, buyPrice: String(quote.price) }));
-      }
+      const { data } = await api.get(`/api/market/prices?symbols=${encodeURIComponent(symbol)}`);
+      const quote = data?.[symbol] || data?.[item.symbol] || Object.values(data || {})[0];
+      if (!quote?.price) return;
+      const currency = ['EUR', 'USD', 'GBP'].includes(quote.currency) ? quote.currency : undefined;
+      setForm((prev) => ({
+        ...prev,
+        name: symbol,
+        type: item.type,
+        buyPrice: String(quote.price),
+        ...(currency ? { currency } : {}),
+      }));
     } catch {}
   };
 

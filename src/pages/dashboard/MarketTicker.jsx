@@ -15,7 +15,12 @@ export default function MarketTicker() {
         if (symbols.length === 0 || cancelled) return;
 
         const { data } = await api.get(`/api/market/prices?symbols=${symbols.join(',')}`);
-        if (!cancelled) setQuotes(Object.values(data));
+        if (cancelled) return;
+        const bySymbol = new Map();
+        for (const quote of Object.values(data || {})) {
+          if (quote?.symbol) bySymbol.set(quote.symbol, quote);
+        }
+        setQuotes([...bySymbol.values()]);
       } catch {}
     };
 

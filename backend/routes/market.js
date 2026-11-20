@@ -24,8 +24,17 @@ router.get('/prices', validate({ query: schemas.marketPricesQuery }), ah(async (
 
   const results = await Promise.allSettled(list.map((s) => getQuote(s)));
   const prices = {};
-  results.forEach((r) => {
-    if (r.status === 'fulfilled' && r.value) prices[r.value.symbol] = r.value;
+  results.forEach((r, index) => {
+    if (r.status !== 'fulfilled' || !r.value) return;
+    const quote = r.value;
+    const requested = list[index];
+    // Key by what the portfolio stores and by Yahoo's canonical symbol.
+    prices[requested] = quote;
+    prices[String(requested).toUpperCase()] = quote;
+    if (quote.symbol) {
+      prices[quote.symbol] = quote;
+      prices[String(quote.symbol).toUpperCase()] = quote;
+    }
   });
   res.json(prices);
 }));

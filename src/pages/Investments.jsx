@@ -174,7 +174,13 @@ export default function Investments() {
                             <td className="num muted" data-label="Unid.">{inv.amount}</td>
                             <td className="num muted" data-label="Compra">{formatMoney(inv.buyPrice, getCurrencySymbol(inv.currency))}</td>
                             <td className="num" data-label="Atual">
-                              {inv.currentPrice ? formatMoney(inv.currentPrice, getCurrencySymbol(inv.currency)) : <span className="muted">—</span>}
+                              {inv.currentPrice ? (
+                                formatMoney(inv.currentPrice, getCurrencySymbol(inv.currency))
+                              ) : (
+                                <span className="muted" title={inv.quoteCurrency && inv.quoteCurrency !== inv.currency
+                                  ? `Cotação em ${inv.quoteCurrency}; a posição está em ${inv.currency}`
+                                  : 'Sem cotação comparável'}>—</span>
+                              )}
                             </td>
                             <td className="num" data-label="Dia">
                               {inv.dailyChange != null ? (
@@ -289,7 +295,13 @@ export default function Investments() {
                 <Field label="Tipo" as="select" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
                   {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </Field>
-                <Field label="Moeda" as="select" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })}>
+                <Field
+                  label="Moeda"
+                  as="select"
+                  value={form.currency}
+                  onChange={(e) => setForm({ ...form, currency: e.target.value })}
+                  hint="Preenchida automaticamente ao escolher um ticker"
+                >
                   <option value="EUR">EUR €</option>
                   <option value="USD">USD $</option>
                   <option value="GBP">GBP £</option>

@@ -202,13 +202,14 @@ function movementKey(date, amount, description, kind = 'expense') {
 }
 
 router.post('/', writeLimiter, validate({ body: schemas.transactionCreate }), ah(async (req, res) => {
-  const { amount, category, description, date } = req.body;
+  const { amount, category, description, date, kind } = req.body;
   const transaction = await prisma.transaction.create({
     data: {
       userId: req.userId,
       amount,
       category,
       description: description ?? null,
+      kind: kind === 'income' || category === 'Rendimento' ? 'income' : 'expense',
       ...(date ? { date } : {}),
     },
   });

@@ -48,6 +48,14 @@ export default function ExpenseForm({
       }));
       return;
     }
+    if (name === 'category') {
+      setFormData((prev) => ({
+        ...prev,
+        category: value,
+        kind: value === 'Rendimento' ? 'income' : (prev.kind === 'income' ? 'expense' : prev.kind),
+      }));
+      return;
+    }
     setFormData({ ...formData, [name]: value });
   };
 

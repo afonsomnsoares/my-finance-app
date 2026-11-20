@@ -86,7 +86,14 @@ export default function QuickAddModal({ show, onClose, symbol, onSuccess }) {
           label="Categoria"
           as="select"
           value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
+          onChange={(e) => {
+            const category = e.target.value;
+            setForm((prev) => ({
+              ...prev,
+              category,
+              kind: category === 'Rendimento' ? 'income' : (prev.kind === 'income' ? 'expense' : prev.kind),
+            }));
+          }}
         >
           {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_ICONS[c] || ''} {c}</option>)}
         </Field>

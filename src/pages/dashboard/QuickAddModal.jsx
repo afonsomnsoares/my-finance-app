@@ -4,12 +4,32 @@ import { toLocalDateKey } from '../../utils/format';
 import { Button, Field, Modal } from '../../components/ui';
 import { CATEGORIES, CATEGORY_ICONS } from './constants';
 
+const EXPENSE_CATEGORY = CATEGORIES.find((c) => c !== 'Rendimento') || CATEGORIES[0];
+
 export default function QuickAddModal({ show, onClose, symbol, onSuccess }) {
-  const [form, setForm] = useState({ amount: '', category: CATEGORIES[0], kind: 'expense', description: '', date: toLocalDateKey(new Date()) });
+  const [form, setForm] = useState({
+    amount: '',
+    category: EXPENSE_CATEGORY,
+    kind: 'expense',
+    description: '',
+    date: toLocalDateKey(new Date()),
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   if (!show) return null;
+
+  const isIncome = form.kind === 'income';
+
+  const setKind = (kind) => {
+    setForm((prev) => ({
+      ...prev,
+      kind,
+      category: kind === 'income'
+        ? 'Rendimento'
+        : (prev.category === 'Rendimento' ? EXPENSE_CATEGORY : prev.category),
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,11 +43,17 @@ export default function QuickAddModal({ show, onClose, symbol, onSuccess }) {
         description: form.description || null,
         date: form.date || toLocalDateKey(new Date()),
       });
-      setForm({ amount: '', category: CATEGORIES[0], kind: 'expense', description: '', date: toLocalDateKey(new Date()) });
+      setForm({
+        amount: '',
+        category: EXPENSE_CATEGORY,
+        kind: 'expense',
+        description: '',
+        date: toLocalDateKey(new Date()),
+      });
       onSuccess();
       onClose();
     } catch {
-      setError('Erro ao adicionar despesa.');
+      setError(isIncome ? 'Erro ao adicionar entrada.' : 'Erro ao adicionar despesa.');
     } finally {
       setSaving(false);
     }
@@ -40,10 +66,11 @@ export default function QuickAddModal({ show, onClose, symbol, onSuccess }) {
           label="Tipo"
           as="select"
           value={form.kind}
-          onChange={(e) => setForm({ ...form, kind: e.target.value })}
+          onChange={(e) => setKind(e.target.value)}
+          hint={isIncome ? 'Conta para o saldo e para “Entradas do mês”.' : 'Sai do saldo como gasto.'}
         >
           <option value="expense">Despesa</option>
-          <option value="income">Entrada</option>
+          <option value="income">Entrada (salário, etc.)</option>
         </Field>
         <Field
           label={`Valor (${symbol})`}
@@ -67,7 +94,7 @@ export default function QuickAddModal({ show, onClose, symbol, onSuccess }) {
           label="Descrição"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          placeholder="Opcional"
+          placeholder={isIncome ? 'Ex: Ordenado novembro' : 'Opcional'}
         />
         <Field
           label="Data"
@@ -77,7 +104,7 @@ export default function QuickAddModal({ show, onClose, symbol, onSuccess }) {
         />
         {error && <div className="ui-alert ui-alert--danger" role="alert">{error}</div>}
         <Button type="submit" variant="primary" block disabled={saving}>
-          {saving ? 'A adicionar...' : 'Adicionar Despesa'}
+          {saving ? 'A adicionar…' : (isIncome ? 'Adicionar entrada' : 'Adicionar despesa')}
         </Button>
       </form>
     </Modal>

@@ -36,6 +36,18 @@ export default function ExpenseForm({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'kind') {
+      setFormData((prev) => ({
+        ...prev,
+        kind: value,
+        category: value === 'income'
+          ? (categories.includes('Rendimento') ? 'Rendimento' : prev.category)
+          : (prev.category === 'Rendimento'
+            ? (categories.find((c) => c !== 'Rendimento') || prev.category)
+            : prev.category),
+      }));
+      return;
+    }
     setFormData({ ...formData, [name]: value });
   };
 
@@ -55,7 +67,7 @@ export default function ExpenseForm({
           onChange={handleChange}
         >
           <option value="expense">Despesa</option>
-          <option value="income">Entrada</option>
+          <option value="income">Entrada (salário, etc.)</option>
         </Field>
         <Field
           label="Valor"
